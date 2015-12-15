@@ -1,6 +1,6 @@
 Amdusias
 -------------------------------------------
-![Amdusias](public/img/amducias.jpg?raw=true)
+![Amdusias](public/img/amdusias.jpg?raw=true)
 
 This will be updated closer to the end of this project.
 
