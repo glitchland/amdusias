@@ -1,0 +1,21 @@
+  <!--- Not-Authenticated -->
+  <div ng-hide="loginCtrl.user">
+    <h2>Login</h2>
+    <form ng-submit="loginCtrl.login(loginCtrl.username, loginCtrl.password)">
+      <label>Username: <input type="text" ng-model="loginCtrl.username" /></label><br />
+      <label>Password: <input type="password" ng-model="loginCtrl.password" /></label><br />
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!--- Authenticated -->
+  <div ng-show="loginCtrl.user">
+    <h3>Welcome {{loginCtrl.user.username}}</h3>
+    <button type="button" ng-click="loginCtrl.logout()">Logout</button>
+    <hr />
+    <button type="button" ng-click="loginCtrl.getRandomUser()">Get Random User</button>
+    <div style="margin-top:14px;">
+      <img ng-src="{{loginCtrl.randomUser.avatar}}" />
+      <pre ng-bind="loginCtrl.randomUser | json"></pre>
+    </div>
+  </div>
