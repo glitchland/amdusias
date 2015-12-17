@@ -9,7 +9,7 @@ module.exports = {
         password = request.body.password;
 
     if (!username || !password) {
-        response.status(400).end('Must provide username or password');
+        return response.status(400).json('Must provide username or password').end();
     }
 
     // find the user
@@ -20,7 +20,7 @@ module.exports = {
       if (err) throw err;
 
       if (!user) {
-        response.status(401).end('Username or password incorrect');
+        return response.status(401).json('Username or password incorrect').end();
       }
 
       if (user) {
@@ -29,10 +29,10 @@ module.exports = {
         user.comparePassword ( password, function (err, isMatch) {
           if (isMatch && !err) {
             console.log("[+] " + username + " user authenticated, generating token");
-            request.user = user;
+            request.user = user;  //Append the user to the request, and go to next, which is the root route.
             next();
           } else {
-            return response.status(401).end('Username or password incorrect');
+            return response.status(401).json('Username or password incorrect').end();
           }
         });
 

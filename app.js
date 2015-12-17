@@ -30,32 +30,15 @@ app.use(morgan('dev'));
 // setup jwt
 app.use(expressJwt({ secret: config.jwtSecret }).unless({path: ['/login']}));
 
-// authenticate user
-app.post('/login', user.authenticate, function(request, response, next) {
-
-  var username = request.user.username;
-  if (!username) {
-    response.status(401).json("No username found in request.");
-    next();
-  }
-
-  var token = jwt.sign({
-    username: username
-  }, config.jwtSecret);
-
-  // send the token to the user
-  response.json({
-    token: token,
-    user: username
-  });
-
-});
+// root route
+var root = require('./app/routes/root');
+app.use('/', user.authenticate, root);
 
 // API routes
-var playlists = require('./app/routes/playlist-api')
+var playlists = require('./app/routes/playlist-api');
 app.use('/api/playlist', user.checkAuthenticated, playlists);
 
-var googleKey = require('./app/routes/google-key')
+var googleKey = require('./app/routes/google-key');
 app.use('/api/googlekey', user.checkAuthenticated, googleKey);
 
 // start the server

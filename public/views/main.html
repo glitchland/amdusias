@@ -1,0 +1,60 @@
+
+      <!-- Socket.io -->
+      <div ng-controller="SocketsController as sockCtrl">
+        <button ng-click="sendWithSocket('MESSAGE')">Send Socket</button>
+        <p>Welcome {{message}}</p>
+      </div>
+
+      <!-- Playlists -->
+      <div ng-controller="PlaylistController as playlistCtrl">
+        <div class="row">
+          <!-- Playlist container -->
+          <div class="col-sm-5 col-md-6" style="border-style: double;">
+
+            <!-- Container has all the songs for current selected playlist -->
+            <select ng-model="selectedPlaylist" ng-change="changedValue(selectedPlaylist)"  ng-options="item.name for item in playlists">
+              <option value="">Select Playlist</option>
+            </select>
+            <p>DEBUG: selected item is : {{selectedPlaylist}}</p>
+            <!--  Playlist contents container  -->
+            <div class="list-group" ng-repeat="video in playlistContent.songs">
+              <h3>{{video.name}}</h3>
+              <button ng-click="removeFromPlaylist(video)">Remove</button>
+              <a href="https://www.youtube.com/watch?v={{video.vid}}">Video Link</a>
+              <img ng-src="{{video.thumb}}" />
+            </div>
+          </div>
+
+          <!-- Song search container -->
+          <div class="col-sm-5 col-sm-offset-2 col-md-6 col-md-offset-0" style="border-style: double;">
+            <!--Song Search-->
+            <form class="form-horizontal" name="songCreateForm" ng-controller="VideoSearchController as vidSrchCtrl" ng-submit="search()">
+              <div class="form-group">
+                <label for="inputSongName" class="col-sm-2 control-label">Song Name</label>
+                <div class="col-sm-10">
+                  <input ng-model="songName" class="form-control" id="inputSongName" placeholder="Youtube Song Name"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <input type="submit" class="btn btn-primary pull-right" id="submit" value="Search" />
+                </div>
+              </div>
+              <!--  Video Search Results Container  -->
+              <div class="list-group">
+                <!--  Video Container  -->
+                <div class="list-group-item" ng-repeat="video in vidSrchCtrl.results">
+                  <h3>{{video.snippet.title}} <em class="pull-right">{{video.id.videoId}}</em></h3>
+                  <button ng-click="addToPlaylist(video)">Add</button>
+                  <a href="https://www.youtube.com/watch?v={{video.id.videoId}}">Video Link</a>
+                  <img ng-src="{{video.snippet.thumbnails.default.url}}" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div> <!--XXX : break this up and make it more legible-->
+
+      </div>
+
+      <!-- Place where we will render the WebGL stuff-->
+      <three-panel></three-panel>
