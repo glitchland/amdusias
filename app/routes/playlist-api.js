@@ -24,26 +24,25 @@ router.route('/')
     playList.save(function(err) {
       if (err) {
         console.log(err);
-          response.json({ message: 'Error saving playlist!' });
-          return;
+          return response.json({ message: 'Error saving playlist!' }).end();
       }
-      response.json({ message: 'Playlist created!' });
+      return response.json({ message: 'Playlist created!' }).end();
     });
 })
 .get( function(request, response) {
+      console.log("REQUEST USER:" + JSON.stringify(request.user));
     // respond with all of the playlists that the user owns
     var username = request.user.username;
     if (!username) {
         console.log("No username in request!");
-        response.status(badRequest).json("Not username in request!");
-        return;
+        return response.status(badRequest).json("Not username in request!").end();
     }
 
     Playlist.find({}).
       where('username').equals(username).
       select('name _id').
       exec(function(err, playlists) {
-        response.json(playlists);
+        return response.json(playlists).end();
       });
 });
 
@@ -56,14 +55,12 @@ router.route('/:id')
 
     if (!playlistId) {
         console.log("No id in request!");
-        response.status(badRequest).json("No id in request!");
-        return;
+        return response.status(badRequest).json("No id in request!").end();
     }
 
     if (!username) {
         console.log("No username in request!");
-        response.status(badRequest).json("No username in request!");
-        return;
+        return response.status(badRequest).json("No username in request!").end();
     }
 
     Playlist.
@@ -71,7 +68,7 @@ router.route('/:id')
       where('_id').equals(playlistId).
       select('name _id songs').
       exec(function(err, playlists) {
-        response.json(playlists);
+        return response.json(playlists).end();
     });
   })
   .delete( function(request, response) { // delete the playlist with the ID
@@ -81,14 +78,12 @@ router.route('/:id')
 
     if (!playlistId) {
         console.log("No id in request!");
-        response.status(badRequest).json("No id in request!");
-        return;
+        return response.status(badRequest).json("No id in request!").end();
     }
 
     if (!username) {
         console.log("No username in request!");
-        response.status(badRequest).json("No username in request!");
-        return;
+        return response.status(badRequest).json("No username in request!").end();
     }
 
     Playlist.
@@ -97,9 +92,9 @@ router.route('/:id')
       remove().
       exec(function(err) {
         if (!err) {
-          response.status(success).json("Successfully Deleted.");
+          return response.status(success).json("Successfully Deleted.").end();
         } else {
-          response.status(fail).json("Failed to delete playlist.");
+          return response.status(fail).json("Failed to delete playlist.").end();
         }
     });
 })
@@ -111,19 +106,16 @@ router.route('/:id')
 
   if (!playlistId) {
       console.log("No id in request!");
-      response.status(badRequest).json("No id in request!");
-      return;
+      return response.status(badRequest).json("No id in request!").end();
   }
 
   if (!username) {
       console.log("No username in request!");
-      response.status(badRequest).json("No username in request!");
-      return;
+      return response.status(badRequest).json("No username in request!").end();
   }
 
   if (!newName) {
-    response.status(badRequest).json("New playlist name missing from request");
-    return;
+    return response.status(badRequest).json("New playlist name missing from request").end();
   }
 
   Playlist.
@@ -133,9 +125,9 @@ router.route('/:id')
       if (doc) {
         doc.name = newName;
         doc.save();
-        response.status(success).json("Renamed the playlist");
+        return response.status(success).json("Renamed the playlist").end();
       } else {
-        response.status(failed).json("Failed to rename the playlist");
+        return response.status(failed).json("Failed to rename the playlist").end();
       }
     });
 });
@@ -155,20 +147,17 @@ router.route('/:id/song/:index?')
 
   if (!playlistId) {
     console.log("No id in request!");
-    response.status(badRequest).json("No id in request!");
-    return;
+    return response.status(badRequest).json("No id in request!").end();
   }
 
   if (!username) {
       console.log("No username in request!");
-      response.status(badRequest).json("No username in request!");
-      return;
+      return response.status(badRequest).json("No username in request!").end();
   }
 
   if (!videoName || !videoId || !thumbnail) {
     console.log(videoName + videoId + thumbnail);
-    response.status(badRequest).json("Video details format was incorrect");
-    return;
+    return response.status(badRequest).json("Video details format was incorrect").end();
   }
 
   Playlist.
@@ -178,9 +167,9 @@ router.route('/:id/song/:index?')
       if (doc) {
         doc.songs.push({name: videoName, vid : videoId, thumb : thumbnail});
         doc.save();
-        response.status(success).json("Added the song.");
+        return response.status(success).json("Added the song.").end();
       } else {
-        response.status(failed).json("Failed to add song.");
+        return response.status(failed).json("Failed to add song.").end();
       }
     });
 })
@@ -192,20 +181,17 @@ router.route('/:id/song/:index?')
 
   if (!playlistId) {
     console.log("No id in request!");
-    response.status(badRequest).json("No id in request!");
-    return;
+    return response.status(badRequest).json("No id in request!").end();
   }
 
   if (!username) {
       console.log("No username in request!");
-      response.status(badRequest).json("No username in request!");
-      return;
+      return response.status(badRequest).json("No username in request!").end();
   }
 
   if (songIndex === undefined) {
     console.log("Video index is missing.");
-    response.status(badRequest).json("Video index is missing");
-    return;
+    return response.status(badRequest).json("Video index is missing").end();
   }
 
   Playlist.
@@ -217,12 +203,12 @@ router.route('/:id/song/:index?')
         if (doc.songs.length >= songIndex && songIndex >= 0) {
           doc.songs.splice(songIndex, 1);
           doc.save();
-          response.status(success).json("Removed song");
+          return response.status(success).json("Removed song").end();
         } else {
-          response.status(failed).json("Failed to remove song");
+          return response.status(failed).json("Failed to remove song").end();
         }
       } else {
-        response.status(failed).json("Failed to remove song");
+        return response.status(failed).json("Failed to remove song").end();
       }
     });
 })
@@ -235,19 +221,16 @@ router.route('/:id/song/:index?')
 
   if (!playlistId) {
     console.log("No id in request!");
-    response.status(badRequest).json("No id in request!");
-    return;
+    return response.status(badRequest).json("No id in request!").end();
   }
 
   if (!username) {
       console.log("No username in request!");
-      response.status(badRequest).json("No username in request!");
-      return;
+      return response.status(badRequest).json("No username in request!").end();
   }
 
   if (!originalIndex || !newIndex) {
-    response.status(badRequest).json("Video indexes are missing");
-    return;
+    return response.status(badRequest).json("Video indexes are missing").end();
   }
 
   Playlist.
@@ -268,12 +251,12 @@ router.route('/:id/song/:index?')
           doc.songs.splice(originalIndex, 1);
 
           doc.save();
-          response.status(success).json("Moved the song");
+          return response.status(success).json("Moved the song").end();
         } else {
-          response.status(failed).json("Failed to move song");
+          return response.status(failed).json("Failed to move song").end();
         }
       } else {
-        response.status(failed).json("Failed to move song");
+        return response.status(failed).json("Failed to move song").end();
       }
     });
 });

@@ -11,7 +11,9 @@ Intro / Reasons / Goals
 
 Getting started     
 ```
-$npm install
+sudo npm cache clean
+###$npm install
+npm update
 $bower install
 nodemon app.js
 ```

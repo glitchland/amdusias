@@ -4,17 +4,21 @@
   .config(['$routeProvider', function ($routeProvider) {
 
     $routeProvider
+        .when('/main', {
+            //controller: 'HomeController', //XXX : refactor this
+            templateUrl: '/views/main.html'
+        })
+
         .when('/login', {
             controller: 'LoginController',
             templateUrl: '/views/login.html'
         })
 
         .when('/', {
-            //controller: 'HomeController', //XXX : refactor this
-            templateUrl: '/views/main.html'
+          redirectTo: '/login'
         })
         
-        .otherwise({ redirectTo: '/#/login' });
+        .otherwise({ redirectTo: '/' });
 
   }]);
 

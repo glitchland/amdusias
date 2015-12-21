@@ -28,11 +28,11 @@ app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
 
 // setup jwt
-app.use(expressJwt({ secret: config.jwtSecret }).unless({path: ['/login']}));
+app.use(expressJwt({secret: config.jwtSecret}).unless({path: ['/login']}));
 
 // root route
 var root = require('./app/routes/root');
-app.use('/', user.authenticate, root);
+app.use('/login', user.authenticate, root);
 
 // API routes
 var playlists = require('./app/routes/playlist-api');
