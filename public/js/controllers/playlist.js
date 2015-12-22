@@ -8,6 +8,13 @@
     $scope.playlists = [];
     $scope.playlistContent = null;
 
+    // Toggle UI slide down
+    $scope.checked = false; // This will be binded using the ps-open attribute
+    
+    $scope.toggle = function(){
+        $scope.checked = !$scope.checked
+    }
+
     $http.get('/api/playlist/')
     .success( function (result) {
           $log.info("Playlist results:" + JSON.stringify(result));

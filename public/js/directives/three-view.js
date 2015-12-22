@@ -1,13 +1,14 @@
+// http://jsfiddle.net/zbjLh/2/
 (function() {
   angular.module('amdusias')
-  .directive('threePanel',
-    [function () {
+  .directive('threePanel', ['$window', function ($window) {
 			return {
 				restrict: "E",
 				scope: {
 					assimpUrl: "=assimpUrl"
 				},
-				link: function (scope, elem, attr) {
+				link: function (scope, element, attr) {
+
 					var camera;
 					var scene;
           var object;
@@ -25,14 +26,14 @@
 					});
 
 					function loadModel(modelUrl) {
-						/*loader1.load(modelUrl, function (assimpjson) {
-							assimpjson.scale.x = assimpjson.scale.y = assimpjson.scale.z = 0.2;
-							assimpjson.updateMatrix();
-							if (previous) scene.remove(previous);
-							scene.add(assimpjson);
+						//loader1.load(modelUrl, function (assimpjson) {
+						//	assimpjson.scale.x = assimpjson.scale.y = assimpjson.scale.z = 0.2;
+					//		assimpjson.updateMatrix();
+					//		if (previous) scene.remove(previous);
+					//		scene.add(assimpjson);
 
-							previous = assimpjson;
-						});*/
+						//	previous = assimpjson;
+						//});
 					}
 
 					//loadModel(scope.assimpUrl);
@@ -41,7 +42,7 @@
 					function init() {
 
             //XXX Put this on the login page !! :)
-						camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 2000);
+						camera = new THREE.PerspectiveCamera(50, $window.innerWidth / $window.innerHeight, 1, 2000);
             camera.position.z = 1000;
 
 						scene = new THREE.Scene();
@@ -67,7 +68,7 @@
 
 						// Lights
 						scene.add(new THREE.AmbientLight(0xcccccc));
-						var directionalLight = new THREE.DirectionalLight(/*Math.random() * 0xffffff*/0xeeeeee);
+						var directionalLight = new THREE.DirectionalLight(0xeeeeee); //Math.random() * 0xffffff
 						directionalLight.position.x = Math.random() - 0.5;
 						directionalLight.position.y = Math.random() - 0.5;
 						directionalLight.position.z = Math.random() - 0.5;
@@ -76,17 +77,22 @@
 
 						// Renderer
 						renderer = new THREE.WebGLRenderer();
-						renderer.setSize(window.innerWidth, window.innerHeight);
-						elem[0].appendChild(renderer.domElement);
+            var h = angular.element(document.querySelector('#three-panel'))[0].offsetHeight;
+            var w = angular.element(document.querySelector('#three-panel'))[0].offsetWidth;
+						renderer.setSize(w,h); //element[0].innerWidth, element[0].innerHeight);
+						element[0].appendChild(renderer.domElement);
 
 						// Events
-						window.addEventListener('resize', onWindowResize, false);
+						$window.addEventListener('resize', onWindowResize, false);
 					}
 
 					//
 					function onWindowResize(event) {
-						renderer.setSize(window.innerWidth, window.innerHeight);
-						camera.aspect = window.innerWidth / window.innerHeight;
+            var h = angular.element(document.querySelector('#three-panel'))[0].offsetHeight;
+            var w = angular.element(document.querySelector('#three-panel'))[0].offsetWidth;
+
+						renderer.setSize(w, h);
+						camera.aspect = w / h;
 						camera.updateProjectionMatrix();
 					}
 
