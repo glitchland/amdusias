@@ -11,9 +11,14 @@
         <span id="curate-playlist-button" class="input-group-addon" ng-click="toggle()">
           <i class="glyphicon glyphicon-edit"></i>
         </span>
-        <span id="delete-playlist-button" class="input-group-addon" ng-click="">
+        <span id="delete-playlist-button" class="input-group-addon" ng-click="deletePlaylist()">
           <i class="glyphicon glyphicon-remove"></i>
         </span>
+        <input type="text" class="form-control" ng-model="newPlaylistName" class="form-control" id="new-playlist-name" placeholder="New Playlist Name...">
+        <span id="create-playlist-button" class="input-group-addon" ng-click="createPlaylist()">
+          <i class="glyphicon glyphicon-plus"></i>
+        </span>
+        <span id="playlist-feedback" ng-model="feedbackMessage" ng-show="feedbackMessage" ng-class="feedbackClass">{{feedbackMessage}}</span>
       </div>
     </form>
 

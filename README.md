@@ -26,3 +26,6 @@ Api Docs
 
 Architecture     
  -soon   
+
+Slide in out playlist add:
+http://jsfiddle.net/gmkhussain/8ea4zLfk/

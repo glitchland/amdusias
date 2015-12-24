@@ -3,23 +3,29 @@
   angular.module('amdusias')
   .controller('PlaylistController', ['$scope', '$http', '$log', function($scope, $http, $log) {
 
-    $scope.feedback = null;
+    $scope.feedbackMessage = null;
+    $scope.feedbackClass  = null;
     $scope.selectedPlaylist = null;
     $scope.playlists = [];
     $scope.playlistContent = null;
+    $scope.newPlaylistName = '';
+
+    var getPlaylists = function() {
+      $http.get('/api/playlist/')
+      .success( function (result) {
+            $log.info("Playlist results:" + JSON.stringify(result));
+            $scope.playlists = result;
+        });
+    }
+
+    getPlaylists();
 
     // Toggle UI slide down
     $scope.checked = false; // This will be binded using the ps-open attribute
-    
+
     $scope.toggle = function(){
         $scope.checked = !$scope.checked
     }
-
-    $http.get('/api/playlist/')
-    .success( function (result) {
-          $log.info("Playlist results:" + JSON.stringify(result));
-          $scope.playlists = result;
-      });
 
     // get details for playlist
     $scope.changedValue = function(item){
@@ -105,6 +111,67 @@
             $scope.playlistContent.songs.splice( index, 1 );
         });
 
+    };
+
+    // delete a playlist
+    $scope.deletePlaylist = function() {
+
+      if (!$scope.selectedPlaylist._id) {
+        $scope.feedbackClass   = "btn btn-danger";
+        $scope.feedbackMessage = 'select a playlist';
+        return;
+      } else {
+        $scope.feedbackMessage = "";
+      }
+
+      var msg = "Are you sure you want to delete " + $scope.selectedPlaylist.name;
+      if (confirm(msg) == true) {
+      } else {
+        return;
+      }
+
+      var uriPath = "/api/playlist/" + $scope.selectedPlaylist._id;
+
+      $http.delete(uriPath)
+      .success( function () {
+          $scope.feedbackClass   = "btn btn-success";
+          $scope.feedbackMessage = "Success";
+          getPlaylists();
+      })
+      .error( function (error) {
+          $scope.feedbackClass   = "btn btn-danger";
+          $scope.feedbackMessage = 'Error';
+          $log.info('Playlist delete error:' + JSON.stringify(error));
+      });
+
+    };
+
+    // create a playlist
+    $scope.createPlaylist = function () {
+
+      if (!$scope.newPlaylistName) {
+        $scope.feedbackClass   = "input-group-addon text-danger";
+        $scope.feedbackMessage = 'Blank name forbidden';
+        return;
+      }
+
+      var jsonBody = {
+        "name"  : $scope.newPlaylistName
+      }
+      var uriPath = "/api/playlist/";
+
+      $http.post(uriPath, jsonBody)
+      .success( function () {
+          $scope.newPlaylistName = "";
+          $scope.feedbackClass   = "input-group-addon text-success";
+          $scope.feedbackMessage = "Success";
+          getPlaylists();
+      })
+      .error( function (error) {
+          $scope.feedbackClass   = "input-group-addon text-danger";
+          $scope.feedbackMessage = 'Error';
+          $log.info('Playlist retrieval error:' + JSON.stringify(error));
+      });
     };
 
   }]);
