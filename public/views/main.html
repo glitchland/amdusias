@@ -61,33 +61,31 @@
         <div class="col-md-12">
           <span id="playlist-edit-menu-up" class="input-group-addon" ng-click="toggle()"><i class="glyphicon glyphicon-menu-up"></i></span>
         </div>
-      </div> <!--XXX : break this up and make it more legible-->
+      </div> <!-- XXX : break this up and make it more legible -->
 
     </pageslide>
   </div>
 
 <div class="row">
+      <!-- place where we will render the WebGL stuff -->
       <div id="three-panel" class="col-md-10">
-        <!-- Place where we will render the WebGL stuff-->
         <three-panel></three-panel>
       </div>
+      <!-- socket.io and chat panel -->
       <div class="col-md-2">
-        <!-- Socket.io -->
-        <div id="chat-panel" ng-controller="SocketsController as sockCtrl">
+        <div id="chat-panel" ng-controller="ChatController as chatCtrl">
           <div class="panel panel-info">
-            <div class="panel-heading">
-              CHAT
-            </div>
+            <div class="panel-heading">CHAT</div>
             <div class="panel-body">
               <ul class="media-list">
                 <li class="media">
                   <div class="media-body">
-                    <div class="media">
+                    <div class="media" ng-repeat="message in chatCtrl.messages">
                       <a class="pull-left" href="#">
                         <img class="media-object img-circle " src="img/user.jpg" />
                       </a>
                       <div class="media-body" >
-                        Donec sit amet ligula enim. Duis vel condimentum massa.Donec sit amet ligula enim. Duis vel condimentum massa.Donec sit amet ligula enim.
+                        {{message}}
                         <br />
                         <small class="text-muted">Alex Deo | 23rd June at 5:00pm</small>
                         <hr />
@@ -99,9 +97,9 @@
             </div>
             <div class="panel-footer">
               <div class="input-group">
-                <input type="text" class="form-control" placeholder="Enter Message" />
+                <input type="text" class="form-control" ng-model="messageText" placeholder="Enter Message" />
                 <span class="input-group-btn">
-                  <button class="btn btn-info" type="button" ng-click="sendWithSocket('MESSAGE')">SEND</button>
+                  <button class="btn btn-info" type="button" ng-disabled="!initialized" ng-click="sendMessage()">SEND</button>
                 </span>
               </div>
             </div>

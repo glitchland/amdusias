@@ -22,6 +22,7 @@ mongoose.connect(config.dbUrl);
 app.use(bodyParser.json());
 
 // set up the public directory
+//app.use(express.favicon(__dirname + '/public/favicon.ico'));
 app.use(express.static(__dirname + '/public'));
 
 // set up console logging
@@ -47,26 +48,4 @@ httpServer.listen(3000, function (){
     console.log("server listening on port", config.listenPort);
 });
 
-// websockets
-//XXX Move this into its own file
-io = require('socket.io').listen(httpServer);
-
-//JWT authentication for websockets.
-io.use(socketioJwt.authorize({
-  secret: config.jwtSecret,
-  handshake: true
-}));
-
-io.on('connection', function(socket) {
-    console.log("Socket connected...");
-
-    socket.on('something', function () {
-      console.log("MESSAGE")
-    });
-
-    socket.on('test', function() {
-        //this socket is authenticated, we are good to handle more events from it.
-        console.log('hello! ', socket.decoded_token.username);
-    });
-
-});
+var io = require('./app/helpers/sockets').listen(httpServer);

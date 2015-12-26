@@ -1,5 +1,5 @@
 (function() {
-  
+
 angular.module('amdusias')
 .factory('SocketFactory', ['$rootScope', function ($rootScope) {
 
@@ -8,14 +8,14 @@ angular.module('amdusias')
 
     return {
 
-        //Initialize the socket
+        // initialize the socket
         init: function (token) {
           console.log("Init creating socket...");
           socket = io.connect('', {'query': 'token=' + token });
           initialized = true;
         },
 
-        //A function to intercept socket 'on' events
+        // a function to intercept socket 'on' events
         on: function (eventName, callback) {
               if(!initialized) {
                 console.log("on: Socket is not initialized yet.");

@@ -4,7 +4,7 @@
   "author" : "coder@glitch.land",
   "version": "0.0.1",
   "private": true,
-  "main": "app.js",
+  "main": "server.js",
   "dependencies": {
     "bcryptjs"     : "~2.0.2",
     "body-parser"  : "~1.14.1",

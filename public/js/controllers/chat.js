@@ -2,14 +2,18 @@
 
 //Scokets
 angular.module('amdusias')
-.controller('SocketsController', function($scope, $log, SocketFactory, AuthTokenFactory) {
+.controller('ChatController', function($scope, $log, SocketFactory, AuthTokenFactory) {
+
+  var jwt;
+  var vm = this;
+  vm.messages    = [];
+  $scope.initialized = false;
 
   $scope.hello= function() {
       $scope.message = 'hello there';
   };
 
-  var jwt;
-  var initialized = false;
+  // initialize socket factory
   var getToken = function() {
     $log.info("getToken firing...");
     if(!jwt) {
@@ -23,20 +27,29 @@ angular.module('amdusias')
       SocketFactory.on('connect', function () {
          $log.info("The socket is connected...");
          SocketFactory.emit('test');
-         initialized = true;
+         $scope.initialized = true;
+         SocketFactory.on("chat", $scope.recieveMessage);
       });
     }
   }
   var getTokenInterval = setInterval(getToken, 3000);
 
-  $scope.sendWithSocket = function(msg) {
-    if(initialized) {
-      $log.info("Emitting:" + msg);
-      SocketFactory.emit("something", msg);
+  // chat functions
+  $scope.sendMessage = function() {
+    if($scope.initialized) {
+      $log.info("Emitting:" + $scope.messageText);
+      SocketFactory.emit("chat", $scope.messageText);
+      $scope.messageText = "";
     } else {
       $log.info("Socket not initilized.");
     }
-  };
+  }
+
+ $scope.recieveMessage = function (message) {
+    // xxx: add username and date/time 
+    console.log("Received:" + message);
+    vm.messages.push(message);
+ };
 
  });
 
