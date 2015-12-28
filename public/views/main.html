@@ -73,36 +73,38 @@
       </div>
       <!-- socket.io and chat panel -->
       <div class="col-md-2">
-        <div id="chat-panel" ng-controller="ChatController as chatCtrl">
-          <div class="panel panel-info">
-            <div class="panel-heading">CHAT</div>
-            <div class="panel-body">
-              <ul class="media-list">
-                <li class="media">
-                  <div class="media-body">
-                    <div class="media" ng-repeat="message in chatCtrl.messages">
-                      <a class="pull-left" href="#">
-                        <img class="media-object img-circle " src="img/user.jpg" />
-                      </a>
-                      <div class="media-body" >
-                        {{message}}
-                        <br />
-                        <small class="text-muted">Alex Deo | 23rd June at 5:00pm</small>
-                        <hr />
+        <div id="chat-container" ng-controller="ChatController as chatCtrl">
+          <form name="chatForm" novalidate ng-submit="chatForm.$valid && sendMessage()">
+            <div class="panel panel-info" id="chat-header-content-footer-panel">
+              <div class="panel-heading" id="chat-header">CHAT</div>
+              <div class="panel-body" id="chat-panel" scroll-glue>
+                <ul class="media-list" id="chat-message-list">
+                  <li class="media" ng-repeat="message in chatCtrl.messages track by $index">
+                    <div class="media-body" id="chat-message-body">
+                      <div class="media" id="chat-message">
+                        <a class="pull-left" href="#">
+                          <img class="media-object img-circle " src="img/user.jpg" />
+                        </a>
+                        <div class="media-body" >
+                          {{message.data}}
+                          <br />
+                          <small class="text-muted">{{message.user}} | {{message.date | date:'yyyy-MM-dd HH:mm:ss'}}</small>
+                          <hr />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="panel-footer">
-              <div class="input-group">
-                <input type="text" class="form-control" ng-model="messageText" placeholder="Enter Message" />
-                <span class="input-group-btn">
-                  <button class="btn btn-info" type="button" ng-disabled="!initialized" ng-click="sendMessage()">SEND</button>
-                </span>
+                  </li>
+                </ul>
               </div>
-            </div>
-        </div>
+              <div class="panel-footer" id="chat-input-box">
+                <div class="input-group">
+                  <input type="text" class="form-control" ng-class="{highlight:chatForm.messageText.$error.required || chatForm.messageText.$error.minlength || chatForm.messageText.$error.maxlength}" ng-model="messageText" name="messageText" required ng-minlength="3" ng-maxlength="512" placeholder="Enter Message" />
+                  <span class="input-group-btn">
+                    <input class="btn btn-info" type="submit" ng-disabled="!initialized" value="SEND"/>
+                  </span>
+                </div>
+              </div>
+          </div>
+      </form>
       </div>
 </div>

@@ -46,9 +46,14 @@ angular.module('amdusias')
   }
 
  $scope.recieveMessage = function (message) {
-    // xxx: add username and date/time 
+    // xxx: add username and date/time
+    var now = new Date();
+    var msg = { date : now,
+                data : message.data,
+                user : message.user
+              };
     console.log("Received:" + message);
-    vm.messages.push(message);
+    vm.messages.push(msg);
  };
 
  });

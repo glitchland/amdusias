@@ -5,13 +5,6 @@
   /*border: 3px solid #73AD21; DEBUG*/
 }
 
-#chat-panel {
-  position: relative;
-  height:90vh;
-  border-radius: 0 !important;
-  /*border: 3px solid #73AD21;*/
-}
-
 /* page slide size is "500px" */
 #search-result-container {
   height : 450px;
@@ -54,28 +47,41 @@
 }
 
 /* chat panel style */
-.panel {
-  max-height:100%;             /*Max height before overflow*/
-  min-height:100%;
+#chat-pane {
   position: relative;
+  height:90vh;
   border-radius: 0 !important;
-  /*border: 3px solid #ccADcc;*/
+  overflow: hidden;
+  /*border: 3px solid #73AD21;*/
 }
 
-/* XXX Fix this to fill div */
-.panel-body {
-  max-height:100%;
-  max-height:100%;
-  position: relative;
+#chat-panel {
+  height: 90%;
+  width: 100%;
+  position: absolute;
   overflow-y: scroll;
   /*border: 3px solid #773311;*/
 }
 
-.panel-footer {
+#chat-header-content-footer-panel {
+  height:90vh;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 !important;
+}
+
+#chat-input-box {
   position: absolute;
   bottom: 0;
   /*border: 3px solid #ccddcc;*/
 }
+
+/* highlight invalid input*/
+.highlight {
+    background:#C8C8C8;
+    /*border: 2px red solid;*/
+}
+
 
 /* CSS Style for sliding playlist UI*/
 /* Needed for hiding crollbars when pushing */

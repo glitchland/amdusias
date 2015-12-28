@@ -15,9 +15,13 @@ module.exports.listen = function(app) {
   io.on('connection', function(socket) {
       console.log("Socket connected...");
 
-      socket.on('chat', function (data) {
-        console.log("Emitting:" + data);
-        socket.emit('chat', data);
+      socket.on('chat', function (message) {
+        var msg = {
+          user : socket.decoded_token.username,
+          data : message
+        };
+        console.log("Emitting:" + msg);
+        socket.emit('chat', msg);
       });
 
       socket.on('test', function() {
