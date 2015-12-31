@@ -2,7 +2,7 @@
 # node create_user.js demo demo
 */
 var path = require("path"),
-    db = require("./app/config/settings.js"),
+    config = require("./app/config/settings.js"),
     User = require(path.join(__dirname, "app/models", "user.js"));
 
 var args = process.argv.slice(2);
@@ -22,7 +22,7 @@ console.log("Creating a new user in Mongo");
 
 var mongoose = require('mongoose');
 mongoose.set('debug', true);
-mongoose.connect(db.url);
+mongoose.connect(config.dbUrl);
 mongoose.connection.on('error', function () {
     console.log('Mongoose connection error', arguments);
 });

@@ -31,6 +31,9 @@ app.use(morgan('dev'));
 // setup jwt
 app.use(expressJwt({secret: config.jwtSecret}).unless({path: ['/login']}));
 
+// volatile state for the server dj queues, video sync etc
+var serverState = require("./app/data/volatile-state");
+
 // root route
 var root = require('./app/routes/root');
 app.use('/login', user.authenticate, root);
@@ -41,6 +44,9 @@ app.use('/api/playlist', user.checkAuthenticated, playlists);
 
 var googleKey = require('./app/routes/google-key');
 app.use('/api/googlekey', user.checkAuthenticated, googleKey);
+
+var djManager = require('./app/routes/dj-queue');
+app.use('/api/djq', user.checkAuthenticated, djManager);
 
 // start the server
 var httpServer = http.Server(app);
