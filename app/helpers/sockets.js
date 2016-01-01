@@ -21,7 +21,7 @@ module.exports.listen = function(app) {
           data : message
         };
         console.log("Emitting:" + msg);
-        socket.emit('chat', msg);
+        io.emit('chat', msg);
       });
 
       socket.on('test', function() {

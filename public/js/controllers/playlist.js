@@ -174,6 +174,32 @@
       });
     };
 
+    // dj using this playlist
+    $scope.djThisPlaylist = function () {
+
+      if (!$scope.selectedPlaylist._id) {
+        $scope.feedbackClass   = "input-group-addon text-danger";
+        $scope.feedbackMessage = 'Cannot DJ empty playlist';
+        return;
+      }
+
+      var jsonBody = {
+        "playlistId"  : $scope.selectedPlaylist._id
+      }
+      var uriPath = "/api/djq/";
+
+      $http.post(uriPath, jsonBody)
+      .success( function () {
+          $scope.feedbackClass   = "input-group-addon text-success";
+          $scope.feedbackMessage = "Success";
+      })
+      .error( function (error) {
+          $scope.feedbackClass   = "input-group-addon text-danger";
+          $scope.feedbackMessage = 'Error';
+          $log.info('Failed to add myself to DJ roster:' + JSON.stringify(error));
+      });
+    };
+
   }]);
 
 })();

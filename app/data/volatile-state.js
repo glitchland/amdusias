@@ -6,9 +6,7 @@ var state = {
 };
 
 exports.addDj = function(dj, playlist) {
-  if(!state.queue.hasOwnProperty(dj)) {
     state.queue[dj] = playlist;
-  }
 };
 
 exports.rmDj = function(dj) {
