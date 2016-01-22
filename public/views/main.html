@@ -69,11 +69,19 @@
     </pageslide>
   </div>
 
-<div class="row">
+<div class="row" ng-controller="ThreeController as threeCtrl">
+
       <!-- place where we will render the WebGL stuff -->
       <div id="three-panel" class="col-md-10">
-        <three-panel></three-panel>
+        <three-panel game-state="theGameState" assimp-url="assimpModelUrl"><div id="3d-css-panel"></div></three-panel>
+        <div class="row">
+          <div class="col-md-12">
+            <button ng-click="changeModel()">change model</button>
+            <input ng-model="assimpModelUrl"></input>
+          </div>
+        </div>
       </div>
+
       <!-- socket.io and chat panel -->
       <div class="col-md-2">
         <div id="chat-container" ng-controller="ChatController as chatCtrl">
