@@ -9,6 +9,11 @@
             templateUrl: '/views/main.html'
         })
 
+        .when('/youtube', {
+            controller: 'YoutubePlayerController',
+            templateUrl: '/views/youtube.html'
+        })
+
         .when('/login', {
             controller: 'LoginController',
             templateUrl: '/views/login.html'
@@ -17,7 +22,7 @@
         .when('/', {
           redirectTo: '/login'
         })
-        
+
         .otherwise({ redirectTo: '/' });
 
   }]);

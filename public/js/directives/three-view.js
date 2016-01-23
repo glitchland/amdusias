@@ -123,11 +123,11 @@
               cssObject.rotation.y = rotation.y;
               cssObject.rotation.z = rotation.z;
 */
+              //http://stackoverflow.com/questions/26034204/unify-the-routing-urls-for-independent-pages-rendered-inside-an-iframe
               // create the iframe to contain webpage
-              var element	= document.createElement('iframe');
-
-              // webpage to be loaded into iframe
-              element.src	= "https://www.youtube.com/embed/pmxYePDPV6M?autoplay=1"; //"http://stemkoski.github.io/Three.js/index.html";
+              var frame	= document.createElement('iframe');
+              frame.src	= "/index.html#youtube"; //"http://stemkoski.github.io/Three.js/index.html";
+              frame.name = "youtube";
 
               // width of iframe in pixels
               var elementWidth = 1024;
@@ -135,11 +135,12 @@
               // force iframe to have same relative dimensions as planeGeometry
               var aspectRatio = height / width;
               var elementHeight = elementWidth * aspectRatio;
-              element.style.width  = elementWidth + "px";
-              element.style.height = elementHeight + "px";
-
+              frame.style.width  = elementWidth + "px";
+              frame.style.height = elementHeight + "px";
+              frame.style.overflow = "hidden";
+              frame.scrolling = "no";
               // create a CSS3DObject to display element
-              var cssObject = new THREE.CSS3DObject( element );
+              var cssObject = new THREE.CSS3DObject( frame );
 
               // synchronize cssObject position/rotation with planeMesh position/rotation
               cssObject.position = planeMesh.position;

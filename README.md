@@ -39,6 +39,9 @@ Api Docs
 Architecture     
  -soon   
 
+Libraries:
+https://github.com/brandly/angular-youtube-embed
+
 Slide in out playlist add:
 http://jsfiddle.net/gmkhussain/8ea4zLfk/
 //http://stackoverflow.com/questions/7866275/access-non-numeric-object-properties-by-index
