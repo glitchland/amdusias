@@ -5,7 +5,6 @@
 
     $routeProvider
         .when('/main', {
-            //controller: 'HomeController', //XXX : refactor this
             templateUrl: '/views/main.html'
         })
 

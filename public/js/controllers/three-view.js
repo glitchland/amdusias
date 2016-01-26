@@ -4,7 +4,7 @@ angular.module('amdusias')
 .controller('ThreeController', ['$scope', '$interval', '$http', '$log', function($scope, $interval, $http, $log) {
 
   $scope.assimpModelUrl = "models/jeep1.ms3d.json";
-  $scope.theGameState = {"val":0};
+  $scope.theGameState = { "val" : 0 };
 
   //https://docs.angularjs.org/api/ng/service/$interval
   // initialize socket factory

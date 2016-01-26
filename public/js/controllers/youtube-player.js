@@ -23,7 +23,8 @@
     //  $scope.theVideo = videos[index++ % videos.length];
     //  player.playVideo();
     });
-  /*
+    
+  /* XXX Porting
     var player;
     var socket = io();
     var getVideoIntervalId = null;

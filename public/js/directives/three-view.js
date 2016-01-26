@@ -29,8 +29,6 @@
               ]
             };
 
-            // the following code is from
-            //    http://catchvar.com/threejs-animating-blender-models
             var android; //XXX Testing
             var animOffset    = 0,   // starting frame of animation
             	walking         = false,
@@ -56,19 +54,14 @@
             	cssRenderer.domElement.style.margin	  = 0;
             	cssRenderer.domElement.style.padding  = 0;
               return cssRenderer;
+
             }
 
             function createGlRenderer(width, height) {
               var glRenderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
 
-              //var renderer = new THREE.WebGLRenderer( { alpha: true } );
-
               glRenderer.setClearColor( 0x003399, 0.5 );
-              //http://stackoverflow.com/questions/22160379/how-to-set-webglrender-background-to-transparent
-              //http://stackoverflow.com/questions/24681170/three-js-properly-blending-css3d-and-webgl
-              //https://github.com/mrdoob/three.js/tree/r61
-              //glRenderer.setClearColor(0x003399);
-              //XXX: Note in r61  glRenderer.setPixelRatio(window.devicePixelRatio);
+
               glRenderer.setSize(width, height);
               glRenderer.shadowMapEnabled = true;
               glRenderer.domElement.style.position = 'absolute';
@@ -77,12 +70,12 @@
               return glRenderer;
             }
 
-//This works in firefox
-//https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/CSS3D.html
-//http://stemkoski.github.io/Three.js/CSS3D.html
+
             function createPlane(width, height, position, rotation) {
 
               // any mesh using this material will be transparent to the css renderer
+              // this is an ugly hack, but it seems to be the only way to do this
+              // right now
               var material  = new THREE.MeshBasicMaterial({
                 color   : 0x000000,
                 opacity : 0.1,
@@ -106,27 +99,10 @@
             }
 
             function createCssObject(width, height, planeMesh, url) {
-/*
-              var html = [
-                '<iframe src="' + url + '" width="' + 1 + '" height="' + 1 + '">',
-                '</iframe>'
-              ].join('\n');
-              var div = document.createElement('div');
-              $(div).html(html);
-              var cssObject = new THREE.CSS3DObject(div);
 
-              cssObject.position.x = position.x;
-              cssObject.position.y = position.y;
-              cssObject.position.z = position.z;
-
-              cssObject.rotation.x = rotation.x;
-              cssObject.rotation.y = rotation.y;
-              cssObject.rotation.z = rotation.z;
-*/
-              //http://stackoverflow.com/questions/26034204/unify-the-routing-urls-for-independent-pages-rendered-inside-an-iframe
               // create the iframe to contain webpage
               var frame	= document.createElement('iframe');
-              frame.src	= "/index.html#youtube"; //"http://stemkoski.github.io/Three.js/index.html";
+              frame.src	= "/index.html#youtube";
               frame.name = "youtube";
 
               // width of iframe in pixels
@@ -139,6 +115,7 @@
               frame.style.height = elementHeight + "px";
               frame.style.overflow = "hidden";
               frame.scrolling = "no";
+
               // create a CSS3DObject to display element
               var cssObject = new THREE.CSS3DObject( frame );
 
@@ -151,27 +128,7 @@
               cssObject.scale.x /= (1 + percentBorder) * (elementWidth / planeMesh.geometry.width);
               cssObject.scale.y /= (1 + percentBorder) * (elementWidth / planeMesh.geometry.width);
               console.log("PLANEMESH:" + planeMesh.geometry.width);
-              //cssObject.position.x = position.x;
-              //cssObject.position.y = position.y;
-              //cssObject.position.y -= 0.1;
-              //cssObject.position.z = position.z;
-              //cssObject.position.z += 0.1;
 
-              //cssObject.rotation.x = rotation.x;
-              //cssObject.rotation.y = rotation.y;
-              //cssObject.rotation.z = rotation.z;
-              //cssObject.rotation = new THREE.Vector3(0, 90, 0);
-
-              // synchronize cssObject position/rotation with planeMesh position/rotation
-
-//              cssObject.position = planeMesh.position;
-//              cssObject.position.y += 1; // Adjust the height
-//              cssObject.rotation = planeMesh.rotation;
-
-              // resize cssObject to same size as planeMesh (plus a border)
-            //  var percentBorder = 0.05;
-              //cssObject.scale.x /= (1 + percentBorder) * (1024 / width);
-              //cssObject.scale.y /= (1 + percentBorder) * (1024 / width);
               return cssObject;
             }
 
@@ -197,7 +154,7 @@
 
   					// Load jeep model using the AssimpJSONLoader
   					//var loader1 = new THREE.AssimpJSONLoader();
-
+            // XXX: Toggle dance
   					scope.$watch("assimpUrl", function(newValue, oldValue) {
   						//if (newValue != oldValue) loadModel(newValue);
               toggleDance(newValue);
@@ -212,9 +169,9 @@
   					function toggleDance(modelUrl) {
   						//loader1.load(modelUrl, function (assimpjson) {
   						//	assimpjson.scale.x = assimpjson.scale.y = assimpjson.scale.z = 0.2;
-  					//		assimpjson.updateMatrix();
-  					//		if (previous) scene.remove(previous);
-  					//		scene.add(assimpjson);
+  					  //	assimpjson.updateMatrix();
+  					  //	if (previous) scene.remove(previous);
+  					  //	scene.add(assimpjson);
 
   						//	previous = assimpjson;
   						//});
@@ -244,6 +201,7 @@
               viewportHeight   = angular.element(document.querySelector('#three-panel'))[0].offsetHeight;
               viewportWidth    = angular.element(document.querySelector('#three-panel'))[0].offsetWidth;
               viewportPosition = angular.element(document.querySelector('#three-panel'))[0].position;
+
               /*
               PerspectiveCamera( fov, aspect, near, far )
                 fov — Camera frustum vertical field of view.
@@ -273,9 +231,6 @@
             	//THREEx.WindowResize(rendererCSS, camera);
             	cssRenderer.domElement.appendChild( glRenderer.domElement );
 
-              // http://stemkoski.github.io/Three.js/CSS3D.html
-              // https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/CSS3D.html
-
               // Youtube video page
               create3dPage(
                 screenWidth,                 // width
@@ -284,6 +239,8 @@
                 new THREE.Vector3(0, 0, 0)   // rotation
               );
 
+              // XXX: Bug, perspective skew on Firefox -- potential work in progress
+              //      fix below. Not ready to be uncommented.
               //var vFOV = camera.fov * (Math.PI / 180); // convert VERTICAL fov to radians
               //var targetZ = viewportHeight / (2 * Math.tan(vFOV / 2) );
               //camera.position.z = targetZ;
@@ -306,8 +263,8 @@
 
               }
 
+              // load animated model into the scene
               jsonLoader.load( "3d-assets/models/android/animations.js", addModelToScene );
-              //https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/Model-Animation.html
 
               var light = new THREE.SpotLight( 0x4aa592, 2, 4500 );
               light.position.set(0, 2, 6);
@@ -348,12 +305,13 @@
   						camera.updateProjectionMatrix();
   					}
 
+            // animate loop
   					function animate() {
   						requestAnimationFrame(animate);
   						render();
   					}
 
-  					//
+  					// rendering loop
   					function render() {
 
               if ( android && dancing) {
