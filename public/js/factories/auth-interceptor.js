@@ -1,7 +1,7 @@
 (function() {
 
 angular.module('amdusias')
-.factory('AuthInterceptor', function AuthInterceptor(AuthTokenFactory) {
+.factory('AuthInterceptor', function AuthInterceptor (AuthTokenFactory) {
 
     return {
       request: addAuthToken

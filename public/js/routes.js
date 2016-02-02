@@ -9,7 +9,6 @@
         })
 
         .when('/youtube', {
-            controller: 'YoutubePlayerController',
             templateUrl: '/views/youtube.html'
         })
 

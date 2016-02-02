@@ -41,6 +41,7 @@ Architecture
 
 Libraries:
 https://github.com/brandly/angular-youtube-embed   
+https://github.com/btford/angular-socket-io
 
 Slide in out playlist add:
 http://jsfiddle.net/gmkhussain/8ea4zLfk/   
@@ -62,3 +63,6 @@ https://github.com/stemkoski/stemkoski.github.com/blob/master/Three.js/Model-Ani
 
 Bugs   
 http://stackoverflow.com/questions/26034204/unify-the-routing-urls-for-independent-pages-rendered-inside-an-iframe   
+
+Notes:
+http://demisx.github.io/angularjs/2014/09/14/angular-what-goes-where.html

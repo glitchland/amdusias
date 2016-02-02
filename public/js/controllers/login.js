@@ -20,7 +20,6 @@
             if(!response.token) {
                handleError("Username or password is incorrect.");
             } else {
-              //$log.info(UrlBase64Decode(response.token.split('.')[1]));
               AuthTokenFactory.setToken(response.token);
               $location.path('/main');
             }

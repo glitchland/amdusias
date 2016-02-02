@@ -34,6 +34,7 @@ module.exports.listen = function(app) {
                                                pingClientInterval);
       function pingClients() {
         var serverVideoState = serverState.getVideoState();
+        console.log('Sending ping with video state:' + serverVideoState);
         io.emit('ping', serverVideoState);
       }
 
@@ -42,6 +43,7 @@ module.exports.listen = function(app) {
        * it uses them to update the internal server state.
        */
       socket.on('pong', function (clientState) {
+        console.log("!Got client pong, with state:" + clientState);
         serverState.updateClientsState(clientState);
       });
 

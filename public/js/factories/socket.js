@@ -1,18 +1,44 @@
 (function() {
 
 angular.module('amdusias')
-.factory('SocketFactory', ['$rootScope', function ($rootScope) {
+.factory('SocketFactory', ['$log', '$rootScope', '$timeout', 'AuthTokenFactory', function ($log, $rootScope, $timeout, AuthTokenFactory) {
 
     var socket = null;
     var initialized = false;
 
+    // listen for the authenticated event emitted on the rootScope of
+    // the Angular app. Once the event is fired, create the socket and resolve
+    // the promise.
+    $rootScope.$on('authenticated', function() {
+        $log.info("SocketFactory got authenticated..");
+        $log.info("SocketFactory initializing socket");
+        token = AuthTokenFactory.getToken();
+        socket = io.connect('', {'query': 'token=' + token });
+        initialized = true;
+
+        $timeout( function() {
+          console.log("SocketFactory broadcasting connected...");
+          // only controllers that are in scope will get this
+          // the youtube controller is not in scope because it is
+          // rendered in an iframe. we have to use a different solution
+          // there
+          $rootScope.$broadcast('chat-sock-connect');
+        }, 3000);
+    });
+
     return {
 
-        // initialize the socket
+        // this can be called to inialize the socket manually
         init: function (token) {
           console.log("Init creating socket...");
           socket = io.connect('', {'query': 'token=' + token });
           initialized = true;
+        },
+
+        // answer if socket is connected
+        isConnected: function() {
+            $log.info("Is socket initialized:"+ initialized);
+            return initialized;
         },
 
         // a function to intercept socket 'on' events

@@ -6,9 +6,7 @@ angular.module('amdusias')
   $scope.assimpModelUrl = "models/jeep1.ms3d.json";
   $scope.theGameState = { "val" : 0 };
 
-  //https://docs.angularjs.org/api/ng/service/$interval
-  // initialize socket factory
-  $interval( function() {
+  var gameStateSyncPromise = $interval( function() {
     var test = Math.random();
     $scope.theGameState = {"val": test };
     $log.info("Controller Gamestate: " + JSON.stringify($scope.theGameState));

@@ -2,41 +2,33 @@
 
 //Scokets
 angular.module('amdusias')
-.controller('ChatController', function($scope, $log, SocketFactory, AuthTokenFactory) {
+.controller('ChatController', ['$scope', '$log', '$rootScope', 'SocketFactory', function($scope, $log, $rootScope, SocketFactory) {
 
   var jwt;
   var vm = this;
   vm.messages    = [];
-  $scope.initialized = false;
+  $scope.socketConnected = false;
 
   $scope.hello= function() {
       $scope.message = 'hello there';
   };
 
-  // initialize socket factory
-  var getToken = function() {
-    $log.info("getToken firing...");
-    if(!jwt) {
-      $log.info("Attempting to get token...");
-      jwt = AuthTokenFactory.getToken();
-    }else{
-      $log.info("Got token... Initializing socket.");
-      $log.info("jwt:" + jwt);
-      clearInterval(getTokenInterval);
-      SocketFactory.init(jwt);
-      SocketFactory.on('connect', function () {
-         $log.info("The socket is connected...");
-         SocketFactory.emit('test');
-         $scope.initialized = true;
-         SocketFactory.on("chat", $scope.recieveMessage);
-      });
-    }
-  }
-  var getTokenInterval = setInterval(getToken, 3000);
+  // socket is connected
+  $rootScope.$on('chat-sock-connect', function() {
+      $log.info("ChatController socket connected..");
+      $scope.socketConnected = true;
+      SocketFactory.on("chat", $scope.recieveMessage);
+  });
+
+  // socket is disconnected
+  $rootScope.$on('chat-sock-disconnect', function() {
+      $log.info("ChatController socket disconnected..");
+      $scope.socketConnected = false;
+  });
 
   // chat functions
   $scope.sendMessage = function() {
-    if($scope.initialized) {
+    if($scope.socketConnected) {
       $log.info("Emitting:" + $scope.messageText);
       SocketFactory.emit("chat", $scope.messageText);
       $scope.messageText = "";
@@ -56,6 +48,6 @@ angular.module('amdusias')
     vm.messages.push(msg);
  };
 
- });
+ }]);
 
 })();
