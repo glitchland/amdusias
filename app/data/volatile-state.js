@@ -6,6 +6,7 @@ var internalState = {
   activeClients: 0,
   videoPlayingClients: 0,
   videoNotPlayingClients: 0,
+  videoErrorClients: 0,
   videoId:  null,
   startSeconds: 0
 };
@@ -64,6 +65,7 @@ exports.updateClientsState = function (clientVideoState) {
   console.log("connectedClients[clientIndex].videoId: " + clients[clientIndex].videoId);
   console.log("connectedClients[clientIndex].startSeconds: " + clients[clientIndex].startSeconds);
   console.log("connectedClients[clientIndex].videoPlaying: " + clients[clientIndex].videoPlaying);
+  console.log("connectedClients[clientIndex].videoError: " + clients[clientIndex].videoError);
   console.log("connectedClients[clientIndex].lastActive:" + clients[clientIndex].lastActive);
 
 };
@@ -125,12 +127,18 @@ function syncServerState() {
   internalState.videoPlayingClients    = 0;
   internalState.videoNotPlayingClients = 0;
 
+  // iterate over the clients
   for(var i=0; i < clients.length; i++) {
 
     if(clients[i].videoPlaying) {
       internalState.videoPlayingClients++;
     }else{
       internalState.videoNotPlayingClients++;
+    }
+
+    //XXX do something with this metric
+    if(clients[i].videoError) {
+      internalState.videoErrorClients++;
     }
 
     //Update latest video progress

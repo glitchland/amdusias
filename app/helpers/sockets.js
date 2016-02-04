@@ -17,7 +17,7 @@ module.exports.listen = function(app) {
   }));
 
   io.on('connection', function(socket) {
-      console.log("Socket connected...");
+      console.log("Socket connected:");
 
       /* chat functionality */
       socket.on('chat', function (message) {
@@ -34,16 +34,16 @@ module.exports.listen = function(app) {
                                                pingClientInterval);
       function pingClients() {
         var serverVideoState = serverState.getVideoState();
-        console.log('Sending ping with video state:' + serverVideoState);
-        io.emit('ping', serverVideoState);
+        console.log('Sending ping with video state:' + JSON.stringify(serverVideoState));
+        io.emit('video-sync-request', serverVideoState);
       }
 
       /* game synchronization */
       /* This handler collects video_pong messages from connected clients
        * it uses them to update the internal server state.
        */
-      socket.on('pong', function (clientState) {
-        console.log("!Got client pong, with state:" + clientState);
+      socket.on('video-sync-response', function (clientState) {
+        console.log("Got client video-sync, with state:" + JSON.stringify(clientState));
         serverState.updateClientsState(clientState);
       });
 
