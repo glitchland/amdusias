@@ -4,7 +4,12 @@
   .controller('YoutubePlayerController', [ '$interval', '$log', '$rootScope', '$scope', 'AuthTokenFactory', 'SocketFactory',
   function ($interval, $log, $rootScope, $scope, AuthTokenFactory, SocketFactory) {
 
-    var vidPlaceHolder = getYoutubeUrlForVidTime("61lkqSFJPbs", 0);
+    var vidPlaceHolder = getYoutubeUrlForVidTime("-----------", 0);
+    var jwt = null;
+    var index  = 0;
+    var getVideoCurrentTimeCBInterval = null;
+    var getVideoCurrentTimeCBMsDelay  = 1000;
+
     $scope.socketConnected = false;
 
     $scope.dynamic = {
@@ -17,12 +22,9 @@
         var videoUrl = getYoutubeUrlForVidTime(videoId, timeOffset);
         $log.info("Changing video to:" + videoUrl);
         $scope.dynamic.url = videoUrl;
+        $scope.localVideoState.startSeconds = 0;
       }
     };
-
-    var jwt = null;
-    //var videos = ["pmxYePDPV6M","Pwrhzfsq8t4","c5X4-pCDy94"];
-    var index  = 0;
 
     $scope.localVideoState = {
       guid : guid(),
@@ -31,8 +33,6 @@
       videoPlaying : false,
       videoError   : false
     };
-
-    var videoSyncMsInterval = 1000;
 
     // initialize socket factory
     var tokenFinder = $interval(function() {
@@ -64,9 +64,6 @@
     // handle youtube player events
     $scope.$on('youtube.player.ended', function ($event, player) {
       $scope.localVideoState.videoPlaying = false;
-      //$scope.theVideo = videos[index++ % videos.length];
-      //player.playVideo();
-      //console.log("player time:" + player.getCurrentTime);
     });
 
     $scope.$on('youtube.player.queued', function ($event, player) {
@@ -83,18 +80,25 @@
       $log.info("youtube.player.playing");
       $scope.localVideoState.videoPlaying = true;
       $scope.localVideoState.videoError   = false;
+      player.playVideo();
     });
 
-    // XXX might be a bug where a new player is created each time
-    // so start seconds is not updated
+    // when the player is ready, start recording the current time
     $scope.$on('youtube.player.ready', function ($event, player) {
       $log.info("youtube.player.ready");
-      $interval(function(){$scope.myVideoSyncCallback(player)}, videoSyncMsInterval);
+
+      $interval.cancel(getVideoCurrentTimeCBInterval);
+      getVideoCurrentTimeCBInterval = $interval(function () {
+        $scope.getVideoCurrentTimeCB(player);
+      }, getVideoCurrentTimeCBMsDelay);
+
       $scope.localVideoState.videoError   = false;
     });
 
-    $scope.myVideoSyncCallback = function (player) {
+    // this gets the current video time and stores it locally
+    $scope.getVideoCurrentTimeCB = function (player) {
       $scope.localVideoState.startSeconds = player.getCurrentTime();
+      $log.info("myVideoSyncCallback.startSeconds : " + $scope.localVideoState.startSeconds);
     }
 
     // based on the response from the server, play the video
@@ -104,6 +108,7 @@
       SocketFactory.emit("video-sync-response", $scope.localVideoState);
     };
 
+    // play the video if it meets the conditions to play
     $scope.conditionallyPlayVideo = function (remoteState) {
       $log.info("Handling video-sync-request...");
 
@@ -111,20 +116,17 @@
         $log.info("RemoteState is null.");
         return -1;
       }
-      //SocketFactory.emit("pong", $scope.localVideoState);
+
+      $log.info("localVideoState.videoId:"+$scope.localVideoState.videoId);
+      $log.info("remoteState.videoId:"+remoteState.videoId);
+      $log.info("remoteState.startSeconds:"+remoteState.startSeconds);
 
       if(!$scope.localVideoState.videoPlaying &&
-         $scope.localVideoState.videoId !== remoteState.videoId) {
-        $log.info("localVideoState.videoId:"+$scope.localVideoState.videoId);
-        $log.info("remoteState.videoId:"+remoteState.videoId);
+          $scope.localVideoState.videoId !== remoteState.videoId) {
 
         $scope.localVideoState.videoId = remoteState.videoId;
         $scope.localVideoState.startSeconds = remoteState.startSeconds;
 
-        /* will need to call the angular directive stuff here
-        player.loadVideoById({'videoId': localVideoState.videoId,
-                              'startSeconds': localVideoState.startSeconds});
-        */
         $scope.dynamic.change($scope.localVideoState.videoId,
                               $scope.localVideoState.startSeconds);
 

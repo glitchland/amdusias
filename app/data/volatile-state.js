@@ -61,12 +61,12 @@ exports.updateClientsState = function (clientVideoState) {
   clients[clientIndex] = clientVideoState;
   clients[clientIndex].lastActive = d.getTime();
 
-  console.log("connectedClients[clientIndex].guid: " + clients[clientIndex].guid);
-  console.log("connectedClients[clientIndex].videoId: " + clients[clientIndex].videoId);
-  console.log("connectedClients[clientIndex].startSeconds: " + clients[clientIndex].startSeconds);
-  console.log("connectedClients[clientIndex].videoPlaying: " + clients[clientIndex].videoPlaying);
-  console.log("connectedClients[clientIndex].videoError: " + clients[clientIndex].videoError);
-  console.log("connectedClients[clientIndex].lastActive:" + clients[clientIndex].lastActive);
+  console.log("connectedClients["+clientIndex+"].guid: " + clients[clientIndex].guid);
+  console.log("connectedClients["+clientIndex+"].videoId: " + clients[clientIndex].videoId);
+  console.log("connectedClients["+clientIndex+"].startSeconds: " + clients[clientIndex].startSeconds);
+  console.log("connectedClients["+clientIndex+"].videoPlaying: " + clients[clientIndex].videoPlaying);
+  console.log("connectedClients["+clientIndex+"].videoError: " + clients[clientIndex].videoError);
+  console.log("connectedClients["+clientIndex+"].lastActive:" + clients[clientIndex].lastActive);
 
 };
 
