@@ -139,11 +139,12 @@ router.route('/:id')
 router.route('/:id/song/:index?')
 .post( function(request, response) { // add song to playlist with id
 
-  var playlistId = request.params.id;
-  var username   = request.user.username;
-  var videoName  = request.body.name;
-  var videoId    = request.body.vid;
-  var thumbnail  = request.body.thumb;
+  var playlistId     = request.params.id;
+  var username       = request.user.username;
+  var videoName      = request.body.name;
+  var videoId        = request.body.vid;
+  var thumbnail      = request.body.thumb;
+  var secondsLength  = request.body.secondsLength;
 
   if (!playlistId) {
     console.log("No id in request!");
@@ -155,8 +156,8 @@ router.route('/:id/song/:index?')
       return response.status(badRequest).json("No username in request!").end();
   }
 
-  if (!videoName || !videoId || !thumbnail) {
-    console.log(videoName + videoId + thumbnail);
+  if (!videoName || !videoId || !thumbnail || !secondsLength) {
+    console.log(videoName + videoId + thumbnail + secondsLength);
     return response.status(badRequest).json("Video details format was incorrect").end();
   }
 
@@ -165,7 +166,8 @@ router.route('/:id/song/:index?')
     where('_id').equals(playlistId).
     exec( function (err, doc){
       if (doc) {
-        doc.songs.push({name: videoName, vid : videoId, thumb : thumbnail});
+        // XXX make a model for the songs
+        doc.songs.push({name: videoName, vid : videoId, thumb : thumbnail, length : secondsLength});
         doc.save();
         return response.status(success).json("Added the song.").end();
       } else {

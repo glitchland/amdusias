@@ -1,8 +1,7 @@
 (function() {
 
 angular.module('amdusias')
-.controller('VideoSearchController', ['$scope', '$http', '$log', function($scope, $http, $log) {
-
+.controller('VideoSearchController', ['AuthYoutube', '$scope', '$http', '$log', function(AuthYoutube, $scope, $http, $log) {
 
     var vm = this;
     //These are the results.
@@ -10,30 +9,13 @@ angular.module('amdusias')
 
     //This is the search query field value on the template.
     $scope.songName = '';
-    var googleKey = null;
-
-    $scope.getKey = function () {
-
-      $http.get('/api/googlekey/', {})
-        .success( function (data) {
-          if (data.length === 0) {
-            $log.error("No key was found.");
-            googleKey = null;
-            return;
-          }
-          googleKey = null;
-          googleKey = data.googleKey;
-      })
-      .error( function (error) {
-        $log.error('Error retrieving google api key: ' + JSON.stringify(error));
-      });
-
-    }
+    var googleKey = AuthYoutube.getApiToken();;
 
     $scope.search = function () {
 
+      // fix bug where googlekey was not present on first search
       if (!googleKey) {
-        $scope.getKey();
+        googleKey = AuthYoutube.getApiToken();
       }
 
       $scope.loading = true;

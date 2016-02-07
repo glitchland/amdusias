@@ -54,7 +54,6 @@ exports.getVideoState = function () {
 };
 
 exports.updateClientsState = function (clientVideoState) {
-
   var clientIndex = getClientIndex(clientVideoState);
 
   var d = new Date();
@@ -67,7 +66,6 @@ exports.updateClientsState = function (clientVideoState) {
   console.log("connectedClients["+clientIndex+"].videoPlaying: " + clients[clientIndex].videoPlaying);
   console.log("connectedClients["+clientIndex+"].videoError: " + clients[clientIndex].videoError);
   console.log("connectedClients["+clientIndex+"].lastActive:" + clients[clientIndex].lastActive);
-
 };
 
 /*Updates lastactive for guid, as searching*/

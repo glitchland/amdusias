@@ -32,6 +32,7 @@ module.exports = {
             request.user = user;  //Append the user to the request, and go to next, which is the root route.
             next();
           } else {
+            console.log("[+] Username" + username + " password incorrect.");
             return response.status(401).json('Username or password incorrect').end();
           }
         });
