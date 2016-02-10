@@ -1,5 +1,6 @@
 var express  = require('express');
 var Playlist = require('../models/playlist');
+var Song     = require('../models/song');
 
 var router = express.Router();
 var badRequest = 400;
@@ -13,6 +14,7 @@ var failure    = 420;
 // create a playlist
 router.route('/')
   .post( function(request, response) {
+
     // create a new instance of the playlist model
     var playList = new Playlist();
 
@@ -23,14 +25,13 @@ router.route('/')
     // save the song and check for errors
     playList.save(function(err) {
       if (err) {
-        console.log(err);
-          return response.json({ message: 'Error saving playlist!' }).end();
+        return response.json({ message: 'Error saving playlist!' }).end();
       }
       return response.json({ message: 'Playlist created!' }).end();
     });
+
 })
 .get( function(request, response) {
-      console.log("REQUEST USER:" + JSON.stringify(request.user));
     // respond with all of the playlists that the user owns
     var username = request.user.username;
     if (!username) {
@@ -38,6 +39,7 @@ router.route('/')
         return response.status(badRequest).json("Not username in request!").end();
     }
 
+    // XXX : make this a populate query with the user id
     Playlist.find({}).
       where('username').equals(username).
       select('name _id').
@@ -63,13 +65,18 @@ router.route('/:id')
         return response.status(badRequest).json("No username in request!").end();
     }
 
+    // grab the playlist, and all of the song details -- in order
+    // Use populate here to respond with the song fields
+    // http://mongoosejs.com/docs/populate.html
     Playlist.
       find({'username': username}).
       where('_id').equals(playlistId).
-      select('name _id songs').
-      exec(function(err, playlists) {
-        return response.json(playlists).end();
-    });
+      populate('songs', 'videoname videoid thumbnail').
+      exec(function(err, details) {
+        var songList = {"songs": details[0].songs};
+        console.log(songList);
+        return response.json(songList).end();
+      });
   })
   .delete( function(request, response) { // delete the playlist with the ID
 
@@ -86,6 +93,7 @@ router.route('/:id')
         return response.status(badRequest).json("No username in request!").end();
     }
 
+    // XXX go through the songs in the playlist and delete them all
     Playlist.
       find({'username': username}).
       where('_id').equals(playlistId).
@@ -135,9 +143,9 @@ router.route('/:id')
 ////////////////////////////////////////////////////////////////////////
 // song curation
 ///////////////////////////////////////////////////////////////////////
-
-router.route('/:id/song/:index?')
-.post( function(request, response) { // add song to playlist with id
+// add song to playlist with id
+router.route('/:id/song/:songid?')
+.post( function(request, response) {
 
   var playlistId     = request.params.id;
   var username       = request.user.username;
@@ -157,29 +165,42 @@ router.route('/:id/song/:index?')
   }
 
   if (!videoName || !videoId || !thumbnail || !secondsLength) {
-    console.log(videoName + videoId + thumbnail + secondsLength);
     return response.status(badRequest).json("Video details format was incorrect").end();
   }
 
+  // Add a song to the playlist
   Playlist.
     findOne({'username': username}).
     where('_id').equals(playlistId).
-    exec( function (err, doc){
-      if (doc) {
-        // XXX make a model for the songs
-        doc.songs.push({name: videoName, vid : videoId, thumb : thumbnail, length : secondsLength});
-        doc.save();
-        return response.status(success).json("Added the song.").end();
-      } else {
-        return response.status(failed).json("Failed to add song.").end();
-      }
+    exec( function (err, playlist) {
+
+      if(!playlist)
+        return response.status(failure).json("Failed to add song.").end();
+
+      var song = new Song({
+                    _playlist: playlist._id,
+                    videoname: videoName,
+                    videoid: videoId,
+                    thumbnail: thumbnail,
+                    length: secondsLength,
+                   });
+
+      song.save(function (err) {
+          if (err)
+            console.log("ERROR: "+ JSON.stringify(err));
+      });
+
+      playlist.songs.push(song);
+      // XXX Wrap the return in a callback passed to .save()
+      playlist.save();
+      return response.status(success).json("Added the song.").end();
     });
 })
 .delete ( function(request, response) { // remove song
 
   var playlistId = request.params.id;
   var username   = request.user.username;
-  var songIndex  = request.params.index;
+  var songId     = request.params.songid;
 
   if (!playlistId) {
     console.log("No id in request!");
@@ -191,24 +212,29 @@ router.route('/:id/song/:index?')
       return response.status(badRequest).json("No username in request!").end();
   }
 
-  if (songIndex === undefined) {
-    console.log("Video index is missing.");
+  if (songId === undefined) {
+    console.log("Video ID is missing.");
     return response.status(badRequest).json("Video index is missing").end();
   }
 
+  // when the song is removed, delete the song entry
   Playlist.
     findOne({'username': username}).
     where('_id').equals(playlistId).
-    exec( function (err, doc){
-      if (doc) {
-        console.log("Docs length: " + doc.songs.length);
-        if (doc.songs.length >= songIndex && songIndex >= 0) {
-          doc.songs.splice(songIndex, 1);
-          doc.save();
-          return response.status(success).json("Removed song").end();
-        } else {
-          return response.status(failed).json("Failed to remove song").end();
-        }
+    exec( function (err, playlist){
+      if (playlist) {
+        playlist.songs.remove(songId);
+        playlist.save(function (err) {
+          // delete the song as well
+          Song.findOne({}).where('_id').equals(songId).exec( function (err, song) {
+            song.remove();
+            song.save(
+              function() {
+                return response.status(success).json("Removed song").end();
+              }
+            );
+          });
+        });
       } else {
         return response.status(failed).json("Failed to remove song").end();
       }

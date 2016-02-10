@@ -35,8 +35,8 @@
           <!--<p>DEBUG: selected item is : {{selectedPlaylist}}</p>-->
           <table class="table table-striped table-bordered table-condensed">
             <tr ng-repeat="video in playlistContent.songs" ng-class-odd="odd" ng-class-even="even">
-               <td><img ng-src="{{video.thumb}}" /></td>
-               <td>{{video.name}}</td>
+               <td><img ng-src="{{video.thumbnail}}" /></td>
+               <td>{{video.videoname}}</td>
                <td><span id="playlist-button" class="input-group-addon" ng-click="removeFromPlaylist(video)"><i class="glyphicon glyphicon-remove"></i></span></td>
             </tr>
           </table>

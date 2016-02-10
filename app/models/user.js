@@ -1,8 +1,8 @@
 "use strict";
 
 var mongoose = require('mongoose'),
-    bcrypt = require("bcryptjs"),
-    Schema = mongoose.Schema;
+    bcrypt   = require("bcryptjs"),
+    Schema   = mongoose.Schema;
 
 var UserSchema = new Schema({
 
@@ -17,7 +17,9 @@ var UserSchema = new Schema({
           message: 'This is not a valid username.'
         },
     },
-
+    modelid : {
+      type: Number,
+    },
     password: {
         type: String,
         required: true

@@ -3,22 +3,22 @@
   angular.module('amdusias')
   .controller('PlaylistController', ['AuthYoutube', '$scope', '$http', '$log', function(AuthYoutube, $scope, $http, $log) {
 
-    $scope.feedbackMessage = null;
-    $scope.feedbackClass  = null;
+    $scope.feedbackMessage  = null;
+    $scope.feedbackClass    = null;
     $scope.selectedPlaylist = null;
-    $scope.playlists = [];
-    $scope.playlistContent = null;
-    $scope.newPlaylistName = "";
+    $scope.playlists        = [];
+    $scope.playlistContent  = [];
+    $scope.newPlaylistName  = "";
 
-    var getPlaylists = function() {
+    $scope.getPlaylists = function() {
       $http.get("/api/playlist/")
       .success( function (result) {
             $log.info("Playlist results:" + JSON.stringify(result));
             $scope.playlists = result;
         });
     }
-
-    getPlaylists();
+    // get the set of playlists
+    $scope.getPlaylists();
 
     // Toggle UI slide down
     $scope.checked = false; // This will be binded using the ps-open attribute
@@ -27,10 +27,10 @@
         $scope.checked = !$scope.checked
     }
 
-    // get details for playlist
-    $scope.changedValue = function(item){
+    // get details for playlist on state change
+    $scope.changedValue = function (playlist) {
 
-        var playlistId = item._id;
+        var playlistId = playlist._id;
 
         if (!playlistId) {
             $scope.feedback = "Error, no playlist id found.";
@@ -38,22 +38,19 @@
         }
 
         $http.get("/api/playlist/" + playlistId, {})
-          .success( function (data) {
-            if (data.length === 0) {
+          .success( function (playlistDetails) {
+            if (playlistDetails.length === 0) {
               $scope.feedback = "No results were found!";
             }
-            $scope.playlistContent = null;
-            $scope.playlistContent = data[0];
-
-            //$scope.songList = JSON.stringify(data);
-            $log.info("Playlist items updated:" + JSON.stringify(data));
+            $scope.playlistContent  = [];
+            $scope.playlistContent  = playlistDetails;
+            
         })
         .error( function (error) {
           //$scope.songList = 'Search error:' + JSON.stringify(error);
           $scope.feedback = "Error retrieving playlist contents!";
           $log.info("Playlist retrieval error:" + JSON.stringify(error));
         });
-
     }
 
     // fetch video length
@@ -176,16 +173,18 @@
         $scope.feedback = null;
       }
 
-      var index = $scope.playlistContent.songs.indexOf(video);
-      $log.info("Index of removed item is: " + index );
+      if (!video._id) {
+        $scope.feedback = "Video id is missing!";
+        return;
+      }
 
-      var uriPath = "/api/playlist/" + $scope.selectedPlaylist._id + "/song/" + index;
+      var uriPath = "/api/playlist/" + $scope.selectedPlaylist._id + "/song/" + video._id;
 
       $http.delete(uriPath)
       .success( function (result) {
             $scope.feedback = video.name + " song deleted.";
-            $scope.playlistContent.songs.splice( index, 1 );
-        });
+            $scope.changedValue($scope.selectedPlaylist);
+      });
 
     };
 

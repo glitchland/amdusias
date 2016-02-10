@@ -8,8 +8,8 @@ var mongoose = require('mongoose');
 // create a new schema
 var Schema = mongoose.Schema;
 
-// define the schema
-var PlaylistSchema = new Schema({
+// schema for playlists
+var playlistSchema = new Schema({
    username    : { type: String, required: true },
    name        : {
      type: String,
@@ -22,7 +22,8 @@ var PlaylistSchema = new Schema({
        message: 'This is not a playlist valid name.'
      },
     },
-    songs   : []
+    // this array will contain a list of song ids
+    songs   : [{ type: Schema.Types.ObjectId, ref: 'Song'}]
 });
 
-module.exports = mongoose.model('Playlist', PlaylistSchema);
+module.exports = mongoose.model('Playlist', playlistSchema);
