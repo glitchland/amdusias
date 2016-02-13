@@ -3,19 +3,19 @@ var exports = module.exports = {};
 var Playlist = require('../models/playlist');
 var Song     = require('../models/song');
 
-/* settings for waiting ratio */
-var pruneClientInterval = 1000 * 1;
+/* settings for interval based jobs */
+var pruneClientInterval       = 1000 * 1;
 var syncInternalStateInterval = 5000;
-var maxRatioUntilNextVideo = 0.6;      //2 thirds
+var maxRatioUntilNextVideo    = 0.6;      //2 thirds
 var videoIndex = 0;
-var lastTimeNextVideoCalled = 0;
 
-var clients = new Array();
+// the volatile server state
+var _internalServerState = new _InternalServerState ();
 
-/* temporary video IDs for development */
-var videoIds = ["dsOooSvbvNA", "KlrwYZ6rVOk", "w_J27GxPNM0",
-                "qgoJn5SUa_4", "FfXPcrqVO8Q", "RxdEy5WeO9A",
-                "VV1PDjSCJY8"];
+// a queue to store our djs
+var _DJQueue = new _DJQueue ();
+
+//
 
 /* keep the current state of videos, maybe put this into
    a file so it is shared */
@@ -24,6 +24,27 @@ var videoState = {
   startSeconds : 0
 }
 
+/************************** External Methods ****************************
+ ************************************************************************/
+// creates a dj and add it to the queue
+exports.addDJ = function (username)
+{
+  var dj = new _DJ (username);
+  _DJQueue.add (dj);
+};
+
+exports.rmDJ = function (username)
+{
+  _DJQueue.remove (username);
+}
+
+// called in sockets.js, used to sync clients with the latest video
+exports.getVideoState = function ()
+ {
+   return _internalServerState.getVideoState();
+};
+
+/*
 exports.getState = function ()
 {
   return state;
@@ -37,11 +58,13 @@ exports.printState = function ()
 exports.getVideoState = function ()
  {
   return videoState;
-};
+};*/
+
+/************************************************************************
+ ************************************************************************/
 
 /********************************** DJ *********************************/
-
-var Dj = function (username)
+var _DJ = function (username)
 {
   this.username       = username;
   this.userid         = null;
@@ -110,7 +133,7 @@ Dj.prototype.stopSong = function ()
 
 /****************************** DJ QUEUE *********************************/
 // this class represents a queue of djs
-var DjQueue = function ()
+var _DJQueue = function ()
 {
   this.queue        = [];
   this.djIndex     = 0;
@@ -174,6 +197,72 @@ var Client = function ()
     this.lastActive        = 0;
 }
 
+Client.prototype.init = function (clientState)
+{
+
+  if ( !this.isClientStateValid(clientState) )
+  {
+    return -1;
+  }
+
+  // set the proper fields
+  this.guid           = clientState.guid;
+  this.videoId        = clientState.videoId;
+  this.videoProgress  = clientState.videoProgress;
+  this.isVideoPlaying = clientState.isVideoPlaying;
+  this.isVideoError   = clientState.isVideoError;
+  this.updateLastSeen();
+
+  return 1;
+}
+
+Client.prototype.printDebug = function ()
+{
+    console.log("------------------------------------------");
+    console.log("Internal Client State Debug Info");
+    console.log("------------------------------------------");
+    console.log("guid................:\t" + this.guid);
+    console.log("videoId.:...........:\t" + this.videoId);
+    console.log("videoProgress.......:\t" + this.videoProgress);
+    console.log("isVideoPlaying......:\t" + this.isVideoPlaying);
+    console.log("isVideoError........:\t" + this.isVideoError);
+    console.log("lastActive..........:\t" + this.lastActive);
+    console.log("------------------------------------------");
+}
+
+Client.prototype.updateState = function (clientState) {
+
+  if ( !this.isClientStateValid(clientState) )
+  {
+    return -1;
+  }
+
+  this.videoId        = clientState.videoId;
+  this.videoProgress  = clientState.videoProgress;
+  this.isVideoPlaying = clientState.isVideoPlaying;
+  this.isVideoError   = clientState.isVideoError;
+  this.updateLastSeen();
+
+  return 1;
+}
+
+Client.protoype.isClientStateValid = function (clientState)
+{
+  // all of these fields must be set
+  if (!clientState.guid)
+    return false;
+  if (!clientState.videoId)
+    return false;
+  if (!clientState.videoProgress)
+    return false;
+  if (!clientState.isVideoPlaying)
+    return false;
+  if (!clientState.isVideoError)
+    return false;
+
+  return true;
+}
+
 Client.prototype.videoPlaying = function ()
 {
   return this.isVideoPlaying;
@@ -184,9 +273,10 @@ Client.prototype.lastSeen = function ()
   return this.lastActive;
 }
 
-Client.prototype.setLastSeen = function (time)
+Client.prototype.updateLastSeen = function ()
 {
-  this.lastActive = time;
+  var d = new Date();
+  this.lastActive = d.getTime();
 }
 
 Client.prototype.videoError = function ()
@@ -197,6 +287,11 @@ Client.prototype.videoError = function ()
 Client.prototype.setVideoProgress = function (progress)
 {
   this.videoProgress = progress;
+}
+
+Client.prototype.videoProgress = function ()
+{
+  return this.videoProgress;
 }
 
 Client.prototype.setvideoId = function (videoid)
@@ -214,45 +309,7 @@ Client.prototype.hasPlayedPast = function (len)
   return this.videoProgress > len;
 }
 
-exports.updateClientsState = function (clientVideoState)
-{
-  var clientIndex = getClientIndex(clientVideoState);
-
-  var d = new Date();
-  clients[clientIndex] = clientVideoState;
-  clients[clientIndex].lastActive = d.getTime();
-
-  console.log("connectedClients["+clientIndex+"].guid: " + clients[clientIndex].guid);
-  console.log("connectedClients["+clientIndex+"].videoId: " + clients[clientIndex].videoId);
-  console.log("connectedClients["+clientIndex+"].startSeconds: " + clients[clientIndex].startSeconds);
-  console.log("connectedClients["+clientIndex+"].videoPlaying: " + clients[clientIndex].videoPlaying);
-  console.log("connectedClients["+clientIndex+"].videoError: " + clients[clientIndex].videoError);
-  console.log("connectedClients["+clientIndex+"].lastActive:" + clients[clientIndex].lastActive);
-};
-
-// updates last-active for guid
-function getClientIndex (clientVideoState)
-{
-
-  for(var i=0; i < clients.length; i++)
-  {
-
-    console.log("doesClientExist client.guid: "         + clients[i].guid);
-    console.log("doesClientExist client.videoId: "      + clients[i].videoId);
-    console.log("doesClientExist client.startSeconds: " + clients[i].startSeconds);
-    console.log("doesClientExist client.videoPlaying: " + clients[i].videoPlaying);
-    console.log("doesClientExist client.lastActive: "   + clients[i].lastActive);
-
-    if(clients[i].guid === clientVideoState.guid)
-    {
-      return i;
-    }
-
-  }
-  clients.push(clientVideoState);
-  return ++i;
-}
-
+/*********************** internal server state  *************************/
 /* volatile internal server state */
 var _InternalServerState = function ()
 {
@@ -266,6 +323,7 @@ var _InternalServerState = function ()
   this.activeClients         = 0;
   this.clientList            = new Array();
   this.currentPlayingVideo   = "";
+  this.currentVideoProgress  = 0;
   this.currentVideoLength    = 0;
   this.lastTimeNextVidCalled = 0;
 };
@@ -275,6 +333,63 @@ _InternalState.prototype.resetClientsPlayingCounters = function ()
   this.clientsNotPlaying = 0;
   this.clientsPlaying    = 0;
   this.clientsPlayedPast = 0;
+};
+
+_InternalState.prototype.getVideoState = function ()
+{
+  var videoState = {
+    videoId : this.currentPlayingVideo,
+    startSeconds : 0
+  }
+  return videoState;
+}
+
+_InternalState.prototype.fetchClientByGuid = function (guid)
+{
+    return this.clientList.map( function(client) {
+                        return client.getGuid();
+                      }).indexOf(guid);
+}
+
+// if the client is valid, and ahead of our state, sync the server to it
+_InternalState.prototype.updateCurrentVideoProgressFrom = function (client)
+{
+    var eligible = client.videoPlaying;
+    var playingCurrent = client.isPlayingThisVideo (this.currentPlayingVideo);
+    var hasValidVideoTime = client.videoProgress < this.currentVideoLength;
+    if (eligible && playingCurrent && hasValidVideoTime)
+    {
+      if (client.videoProgress > this.currentVideoProgress) {
+        this.currentVideoProgress = client.videoProgress;
+      }
+    }
+}
+
+_InternalState.prototype.updateClientsState = function (clientState)
+{
+  var client = this.fetchClientByGuid (clientVideoState.guid);
+
+  // if no client is found, assume it is new
+  if (client < 0 )
+  {
+      var newClient = new Client ();
+      if ( newClient.init(clientState) > 0 )
+      {
+         this.clientList.push(newClient);
+         return 0;
+      }
+      return -1;
+  }
+
+  // the client already exists, lets update the state
+  if ( client.updateState(clientState) < 0 )
+    return -1;
+
+  // update the internal video progress state from the client
+  this.updateCurrentVideoProgressFrom (client);
+
+  // print some debug info for dev
+  client.printDebug();
 };
 
 _InternalState.prototype.getClientAtIndex = function (i)
@@ -398,10 +513,9 @@ _InternalState.prototype.printState = function ()
   console.log("------------------------------------------");
 }
 
-var _internalState = new _InternalState ();
-
-/************************** Interval Functions ***************************/
-/* this syncs the server state every N milliseconds*/
+/************************** Interval Functions ***************************
+ *************************************************************************/
+// this syncs the server state every N milliseconds
 var intvlServerState = setInterval(function(){updateInternalServerState()},
                                        updateInternalServerStateFrequency);
 
@@ -421,14 +535,13 @@ function updateInternalServerState ()
   }
 }
 
-/* this prunes the client list of inactive clients */
+// this prunes the client list amd removes inactive clients
 var intvlpruneClients = setInterval(function(){pruneInactiveClients()},
                                     pruneInactiveClientInterval);
 function pruneInactiveClients()
 {
   _internalState.pruneInactiveClients();
 }
-
 /************************************************************************/
 
 /* XXX Temporary location for some test code to create DJ object       **/
