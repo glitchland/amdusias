@@ -17,8 +17,11 @@ var UserSchema = new Schema({
           message: 'This is not a valid username.'
         },
     },
-    modelid : {
+    threedModelId : {
       type: Number,
+    },
+    activePlaylistId : {
+      { type: Schema.Types.ObjectId, ref: 'Playlist' },
     },
     password: {
         type: String,

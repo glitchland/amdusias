@@ -1,7 +1,7 @@
 // http://jsfiddle.net/zbjLh/2/
 (function() {
   angular.module('amdusias')
-  .directive('threePanel', ['$window', '$log', function ($window, $log) {
+  .directive('threePanel', ['$window', '$log', '$http', function ($window, $log, $http) {
 
       // directive code
 			return {
@@ -19,6 +19,10 @@
             var cssRenderer;
             var viewportHeight;
             var viewportWidth;
+
+            // for shaders
+            var start = Date.now();
+            var shaderMaterial = null;
 
             var dancing = false; // XXX: For testing model load unload.
 
@@ -274,9 +278,66 @@
               light.shadowMapDarkness = 0.98;
 
               glScene.add( light );
+
+              // setup the sky
+              addSky();
   					}
 
-            //Add a model to the scene
+            // a structure to hold shaders that are loaded from the server
+            function dataLoader() {
+                this.data_count = 0;
+                this.data_array = new Array();
+            }
+
+            // a function to load the shaders into the structure
+            function loadRemoteFile(file){
+                return $http({
+                  method: 'GET',
+                  url: file
+                }).then( function( response ) {
+                  return response.data;
+                });
+            }
+
+            function addSky () {
+              //http://threejs.org/docs/#Reference/Materials/ShaderMaterial
+              var geometry = new THREE.SphereGeometry(15, 15, 15);
+
+              // load shaders from remote instead of from the dom
+              var fragShader = null;
+              var vertShader = null;
+              loadRemoteFile( "shaders/sky/fragment.c")
+              .then( function (shader) {
+                fragShader = shader;
+                loadRemoteFile( "shaders/sky/vertex.c")
+                .then( function (shader) {
+                  vertShader = shader;
+                  shaderMaterial = new THREE.ShaderMaterial( {
+                    uniforms: {
+                        tExplosion: {
+                            type: "t",
+                            value: THREE.ImageUtils.loadTexture( 'img/explosion.png' )
+                        },
+                        time: { // float initialized to 0
+                            type: "f",
+                            value: 0.0
+                        }
+                    },
+                    vertexShader:   vertShader,
+                    fragmentShader: fragShader
+                  });
+
+                  skyBox = new THREE.Mesh(geometry, shaderMaterial);
+                  skyBox.scale.set(-1, 1, 1);
+                  skyBox.eulerOrder  = 'XZY';
+                  skyBox.renderDepth = 1000.0;
+                  glScene.add( skyBox );
+
+                });
+              });
+            }
+
+            // add a model to the scene
             function addModelToScene( geometry, materials )
             {
               var scaleFactor = 0.05;
@@ -294,7 +355,7 @@
             	glScene.add( android );
             }
 
-  					//
+  					// handle window resize
   					function onWindowResize(event) {
               var h = angular.element(document.querySelector('#three-panel'))[0].offsetHeight;
               var w = angular.element(document.querySelector('#three-panel'))[0].offsetWidth;
@@ -328,6 +389,10 @@
               		android.morphTargetInfluences[ keyframe ] = ( time % interpolation ) / interpolation;
               		android.morphTargetInfluences[ lastKeyframe ] = 1 - android.morphTargetInfluences[ keyframe ];
               }
+
+              // This is a hack, it is for the shader applied to the sky material
+              if (shaderMaterial)
+                shaderMaterial.uniforms[ 'time' ].value = .00025 * ( Date.now() - start );
 
               glRenderer.render(glScene, camera);
               cssRenderer.render(cssScene, camera);
