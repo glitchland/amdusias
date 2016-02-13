@@ -24,21 +24,25 @@ var videoState = {
   startSeconds : 0
 }
 
-exports.getState = function () {
+exports.getState = function ()
+{
   return state;
 };
 
-exports.printState = function () {
+exports.printState = function ()
+{
   console.log(state);
 };
 
-exports.getVideoState = function () {
+exports.getVideoState = function ()
+ {
   return videoState;
 };
 
 /********************************** DJ *********************************/
 
-var Dj = function (username) {
+var Dj = function (username)
+{
   this.username       = username;
   this.userid         = null;
   this.activePlaylist = null;
@@ -47,26 +51,31 @@ var Dj = function (username) {
 };
 
 // this updates the date for the last song played
-Dj.prototype.updateSongLastPlayed = function(songId) {
+Dj.prototype.updateSongLastPlayed = function(songId)
+{
 };
 
 // this sets the active playlist for a dj
-Dj.prototype.setActivePlaylist = function (playlistId) {
+Dj.prototype.setActivePlaylist = function (playlistId)
+{
   this.activePlaylist = playlistId;
 }
 
 // this plays the next song
-Dj.prototype.playSong = function () {
+Dj.prototype.playSong = function ()
+{
     var song = this.playNextSong();
 }
 
 // this gets the next song for a DJ
-Dj.prototype.playNextSong = function () {
+Dj.prototype.playNextSong = function ()
+{
 
   var songIndex = this.songIndex;
 
   // return an error if playlist is not set
-  if (!this.activePlaylist) {
+  if (!this.activePlaylist)
+  {
     console.log("The playllist for " +  this.username + "is null.");
     return;
   }
@@ -76,7 +85,8 @@ Dj.prototype.playNextSong = function () {
     find({'username': this.username}).
     where('_id').equals(this.activePlaylist).
     populate('songs', 'videoname videoid thumbnail').
-    exec(function(err, details) {
+    exec(function(err, details)
+    {
 
       console.log("~>" + this.username + "is playing the next video!");
       var songCount = Object.keys(details[0].songs).length;
@@ -93,51 +103,60 @@ Dj.prototype.playNextSong = function () {
 }
 
 // this stops the currently playing song
-Dj.prototype.stopSong = function () {
+Dj.prototype.stopSong = function ()
+{
   // do something to stop the song
 }
 
 /****************************** DJ QUEUE *********************************/
 // this class represents a queue of djs
-var DjQueue = function () {
+var DjQueue = function ()
+{
   this.queue        = [];
   this.djIndex     = 0;
 };
 
 // takes dj adds it to the queue
-DjQueue.prototype.add = function (dj) {
+DjQueue.prototype.add = function (dj)
+{
   this.queue.push(dj);
 }
 
 // get index of dj based on userid
-DjQueue.prototype.getIndex = function (userid) {
+DjQueue.prototype.getIndex = function (userid)
+{
   return this.queue.map( function(dj) {
                       return dj.userid;
                     }).indexOf(userid);
 }
 
 // removes a dj from the queue based on userid
-DjQueue.prototype.remove = function (userid) {
+DjQueue.prototype.remove = function (userid)
+{
   // remove the dj from the queue
   var djIndex = this.getIndex(userid);
 
   // remove the dj from the queue
-  if (djIndex > -1) {
+  if (djIndex > -1)
+  {
     this.queue[djIndex].stopSong();
     this.queue.splice(djIndex, 1);
   }
 }
 
 // allows a dj to skip the current song
-DjQueue.prototype.skip= function (userid) {
+DjQueue.prototype.skip= function (userid)
+ {
     var djIndex = this.getIndex(userid);
-    if (djIndex > -1) {
+    if (djIndex > -1)
+    {
       this.queue[djIndex].stopSong();
     }
 }
 
 // get next DJ
-DjQueue.prototype.playNextDj = function () {
+DjQueue.prototype.playNextDj = function ()
+{
   var dj = this.queue[++this.djIndex % this.queue.length];
   dj.playSong();
 }
@@ -145,7 +164,8 @@ DjQueue.prototype.playNextDj = function () {
 /*********************** client synchronization  *************************/
 
 // a class to represent a connected client
-var Client = function () {
+var Client = function ()
+{
     this.guid              = null;
     this.videoId           = null;
     this.videoProgress     = 0; //startSeconds
@@ -154,39 +174,48 @@ var Client = function () {
     this.lastActive        = 0;
 }
 
-Client.prototype.videoPlaying = function () {
+Client.prototype.videoPlaying = function ()
+{
   return this.isVideoPlaying;
 }
 
-Client.prototype.lastSeen = function () {
+Client.prototype.lastSeen = function ()
+{
   return this.lastActive;
 }
 
-Client.prototype.setLastSeen = function (time) {
+Client.prototype.setLastSeen = function (time)
+{
   this.lastActive = time;
 }
 
-Client.prototype.videoError = function () {
+Client.prototype.videoError = function ()
+{
   return this.isVideoError;
 }
 
-Client.prototype.setVideoProgress = function (progress) {
+Client.prototype.setVideoProgress = function (progress)
+{
   this.videoProgress = progress;
 }
 
-Client.prototype.setvideoId = function (videoid) {
+Client.prototype.setvideoId = function (videoid)
+{
   this.videoId = videoid;
 }
 
-Client.prototype.isPlayingThisVideo = function (videoid) {
+Client.prototype.isPlayingThisVideo = function (videoid)
+{
   return this.videoId === videoid;
 }
 
-Client.prototype.hasPlayedPast = function (len) {
+Client.prototype.hasPlayedPast = function (len)
+{
   return this.videoProgress > len;
 }
 
-exports.updateClientsState = function (clientVideoState) {
+exports.updateClientsState = function (clientVideoState)
+{
   var clientIndex = getClientIndex(clientVideoState);
 
   var d = new Date();
@@ -202,9 +231,11 @@ exports.updateClientsState = function (clientVideoState) {
 };
 
 // updates last-active for guid
-function getClientIndex (clientVideoState) {
+function getClientIndex (clientVideoState)
+{
 
-  for(var i=0; i < clients.length; i++) {
+  for(var i=0; i < clients.length; i++)
+  {
 
     console.log("doesClientExist client.guid: "         + clients[i].guid);
     console.log("doesClientExist client.videoId: "      + clients[i].videoId);
@@ -212,7 +243,8 @@ function getClientIndex (clientVideoState) {
     console.log("doesClientExist client.videoPlaying: " + clients[i].videoPlaying);
     console.log("doesClientExist client.lastActive: "   + clients[i].lastActive);
 
-    if(clients[i].guid === clientVideoState.guid) {
+    if(clients[i].guid === clientVideoState.guid)
+    {
       return i;
     }
 
