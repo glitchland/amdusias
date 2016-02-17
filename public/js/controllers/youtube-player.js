@@ -22,16 +22,16 @@
         var videoUrl = getYoutubeUrlForVidTime(videoId, timeOffset);
         $log.info("Changing video to:" + videoUrl);
         $scope.dynamic.url = videoUrl;
-        $scope.localVideoState.startSeconds = 0;
+        $scope.localVideoState.videoProgress = 0;
       }
     };
 
     $scope.localVideoState = {
-      guid : guid(),
-      videoId : null,
-      startSeconds : 0,
-      videoPlaying : false,
-      videoError   : false
+      guid           : guid(),
+      videoId        : null,
+      videoProgress  : 0,
+      isVideoPlaying : false,
+      isVideoError   : false
     };
 
     // initialize socket factory
@@ -48,7 +48,7 @@
         SocketFactory.on('connect', function () {
            $log.info("Youtube player the socket is connected...");
            $scope.socketConnected = true;
-           SocketFactory.on('video-sync-request', $scope.videoSyncResponse);
+           SocketFactory.on('videostate-sync-request', $scope.videoSyncResponse);
         });
       }
     }, 3000);
@@ -63,7 +63,7 @@
 
     // handle youtube player events
     $scope.$on('youtube.player.ended', function ($event, player) {
-      $scope.localVideoState.videoPlaying = false;
+      $scope.localVideoState.isVideoPlaying = false;
     });
 
     $scope.$on('youtube.player.queued', function ($event, player) {
@@ -72,14 +72,14 @@
 
     $scope.$on('youtube.player.error', function ($event, player) {
       $log.info("youtube.player.error");
-      $scope.localVideoState.videoPlaying = false; //XXX : maybe track player errors
-      $scope.localVideoState.videoError   = true;
+      $scope.localVideoState.isVideoPlaying = false; //XXX : maybe track player errors
+      $scope.localVideoState.isVideoError   = true;
     });
 
     $scope.$on('youtube.player.playing', function ($event, player) {
       $log.info("youtube.player.playing");
-      $scope.localVideoState.videoPlaying = true;
-      $scope.localVideoState.videoError   = false;
+      $scope.localVideoState.isVideoPlaying = true;
+      $scope.localVideoState.isVideoError   = false;
       player.playVideo();
     });
 
@@ -92,25 +92,25 @@
         $scope.getVideoCurrentTimeCB(player);
       }, getVideoCurrentTimeCBMsDelay);
 
-      $scope.localVideoState.videoError   = false;
+      $scope.localVideoState.isVideoError  = false;
     });
 
     // this gets the current video time and stores it locally
     $scope.getVideoCurrentTimeCB = function (player) {
-      $scope.localVideoState.startSeconds = player.getCurrentTime();
-      $log.info("myVideoSyncCallback.startSeconds : " + $scope.localVideoState.startSeconds);
+      $scope.localVideoState.videoProgress = player.getCurrentTime();
+      $log.info("myVideoSyncCallback.startSeconds : " + $scope.localVideoState.videoProgress);
     }
 
     // based on the response from the server, play the video
     $scope.videoSyncResponse = function (remoteState) {
       $log.info("Got video-sync-request, sending video-sync-response");
       $scope.conditionallyPlayVideo(remoteState);
-      SocketFactory.emit("video-sync-response", $scope.localVideoState);
+      SocketFactory.emit("videostate-sync-response", $scope.localVideoState);
     };
 
     // play the video if it meets the conditions to play
     $scope.conditionallyPlayVideo = function (remoteState) {
-      $log.info("Handling video-sync-request...");
+      $log.info("Handling videostate-sync-request...");
 
       if(!remoteState) {
         $log.info("RemoteState is null.");
@@ -118,20 +118,20 @@
       }
 
       $log.info("localVideoState.videoId:"+$scope.localVideoState.videoId);
-      $log.info("remoteState.videoId:"+remoteState.videoId);
-      $log.info("remoteState.startSeconds:"+remoteState.startSeconds);
+      $log.info("remoteState.videoid:"+remoteState.videoId);
+      $log.info("remoteState.videoProgress:"+remoteState.videoProgress);
 
-      if(!$scope.localVideoState.videoPlaying &&
+      if(!$scope.localVideoState.isVideoPlaying &&
           $scope.localVideoState.videoId !== remoteState.videoId) {
 
         $scope.localVideoState.videoId = remoteState.videoId;
-        $scope.localVideoState.startSeconds = remoteState.startSeconds;
+        $scope.localVideoState.videoProgress = remoteState.videoProgress;
 
         $scope.dynamic.change($scope.localVideoState.videoId,
-                              $scope.localVideoState.startSeconds);
+                              $scope.localVideoState.videoProgress);
 
         // we set the video playing local state here to prevent race
-        $scope.localVideoState.videoPlaying = true;
+        $scope.localVideoState.isVideoPlaying = true;
       }
     };
 

@@ -44,7 +44,7 @@
             }
             $scope.playlistContent  = [];
             $scope.playlistContent  = playlistDetails;
-            
+
         })
         .error( function (error) {
           //$scope.songList = 'Search error:' + JSON.stringify(error);

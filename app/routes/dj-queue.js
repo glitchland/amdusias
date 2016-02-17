@@ -14,7 +14,6 @@ var router = express.Router();
 
 /************************************************************************/
 /**************************** API ***************************************/
-// join dj rotation
 router.route('/')
   .all(function (request, response, next) {
     var username = request.user.username;
@@ -32,8 +31,10 @@ router.route('/')
     request.playlist = playlistId;
     next();
   })
-  .post( function(request, response) {
+  .post( function(request, response) { // join dj rotation
 
+    state.addDJ(request.username, request.playlist);
+    /*
     playlist.
       find({'username': request.username}).
       where('_id').equals(request.playlist).
@@ -44,12 +45,12 @@ router.route('/')
           console.log(err);
           return response.status(failure).json("invalid playlistid error").end();
         }
+     */
+        //state.addDj(request.username, request.playlist);
+        //state.printState();
+      //  return response.status(200).json("ok").end();
 
-        state.addDj(request.username, request.playlist);
-        state.printState();
-        return response.status(200).json("ok").end();
-
-      });
+    //  });
   })
   .get( function(request, response) { //status
     return response.status(200).json(state.getState()).end();
@@ -67,7 +68,7 @@ router.route('/')
           return response.status(failure).json("invalid playlistid error").end();
         }
 
-        state.rmDj(request.username);
+        state.rmDJ(request.username);
         state.printState();
         return response.status(200).json("ok").end();
 

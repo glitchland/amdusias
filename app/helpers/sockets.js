@@ -5,8 +5,9 @@ var serverState = require('../data/volatile-state.js');
 
 module.exports.listen = function(app) {
 
-  var pingClientInterval = 5 * 1000;
-  var currentVideoId = "";
+  var pingClientInterval    = 5 * 1000;
+  var syncGameStateInterval = 10 * 1000;
+  var currentVideoId        = "";
 
   io = socketio.listen(app);
 
@@ -16,7 +17,8 @@ module.exports.listen = function(app) {
     handshake: true
   }));
 
-  io.on('connection', function(socket) {
+  io.on('connection', function(socket)
+  {
       console.log("Socket connected:");
 
       /* chat functionality */
@@ -29,22 +31,35 @@ module.exports.listen = function(app) {
         io.emit('chat', msg);
       });
 
-      /*Send a broadcast ping every N milliseconds*/
-      var getClientStateInterval = setInterval(function(){pingClients()},
-                                               pingClientInterval);
+      // send a broadcast ping every N milliseconds
+      var itvlGetClientState = setInterval(function(){pingClients()},
+                                           pingClientInterval);
       function pingClients() {
         var serverVideoState = serverState.getVideoState();
         console.log('Sending ping with video state:' + JSON.stringify(serverVideoState));
-        io.emit('video-sync-request', serverVideoState);
+        io.emit('videostate-sync-request', serverVideoState);
+      }
+
+      // this is a one way fixed interval game state synchronization message
+      var itvlSyncGameState = setInterval(function(){syncGameState()},
+                                          syncGameStateInterval);
+      function syncGameState()
+      {
+        var gameState = serverState.getGameState();
+        //console.log('Sending gamestate:' + JSON.stringify(gameState));
+        io.emit('gamestate-sync-message', gameState);
       }
 
       /* game synchronization */
       /* This handler collects video_pong messages from connected clients
        * it uses them to update the internal server state.
        */
-      socket.on('video-sync-response', function (clientState) {
-        console.log("Got client video-sync, with state:" + JSON.stringify(clientState));
-        serverState.updateClientsState(clientState);
+      socket.on('videostate-sync-response', function (clientState)
+      {
+        //console.log("Got client video-sync, with state:" + JSON.stringify(clientState));
+        // add the username to the clientState
+        clientState['username'] = socket.decoded_token.username;
+        serverState.updateClientsState (clientState);
       });
 
       /* XXX testing */

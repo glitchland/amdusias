@@ -49,6 +49,7 @@ router.route('/')
 });
 
 // routes with playlist id
+// ***************** This Sets The Playlist Active ****************/
 router.route('/:id')
   .get( function(request, response) { // respond with the playlist with the ID
 
@@ -77,6 +78,8 @@ router.route('/:id')
         console.log(songList);
         return response.json(songList).end();
       });
+
+      // set this playlist active 
   })
   .delete( function(request, response) { // delete the playlist with the ID
 
