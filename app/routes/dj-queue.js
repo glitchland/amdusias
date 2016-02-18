@@ -1,5 +1,5 @@
 var express  = require('express');
-var state = require("../data/volatile-state");
+var state    = require("../data/volatile-state");
 var playlist = require('../models/playlist');
 
 var badRequest = 400;
@@ -24,7 +24,7 @@ router.route('/')
     }
 
     if(!playlistId) {
-      return response.status(failure).json("no playlistid error").end();
+      playlistId = null;
     }
 
     request.username = username;
@@ -34,45 +34,15 @@ router.route('/')
   .post( function(request, response) { // join dj rotation
 
     state.addDJ(request.username, request.playlist);
-    /*
-    playlist.
-      find({'username': request.username}).
-      where('_id').equals(request.playlist).
-      select('_id').
-      exec(function(err, result) {
 
-        if(result.length === 0) {
-          console.log(err);
-          return response.status(failure).json("invalid playlistid error").end();
-        }
-     */
-        //state.addDj(request.username, request.playlist);
-        //state.printState();
-      //  return response.status(200).json("ok").end();
-
-    //  });
   })
   .get( function(request, response) { //status
     return response.status(200).json(state.getState()).end();
   })
-  .delete( function(request, response) { //status
+  .delete( function(request, response) { //remove dj
 
-    playlist.
-      find({'username': request.username}).
-      where('_id').equals(request.playlist).
-      select('_id').
-      exec(function(err, result) {
+    state.rmDJ(request.username);
 
-        if(playlist.length === 0) {
-          console.log(err);
-          return response.status(failure).json("invalid playlistid error").end();
-        }
-
-        state.rmDJ(request.username);
-        state.printState();
-        return response.status(200).json("ok").end();
-
-      });
   });
 
 module.exports = router;

@@ -35,12 +35,16 @@ var songSchema = new Schema ({
      required: true,
      maxlength: 256,
    },
-   length     : {
+   secvidlen     : {
      type: Number,
      required: true
    },
    played     : {
      type: Date, default: '12/10/1990'
+   },
+   position  : {
+     type: Number,
+     required: true
    }
  });
 

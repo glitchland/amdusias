@@ -20,9 +20,6 @@ var UserSchema = new Schema({
     threedModelId : {
       type: Number,
     },
-    activePlaylistId : {
-      { type: Schema.Types.ObjectId, ref: 'Playlist' },
-    },
     password: {
         type: String,
         required: true

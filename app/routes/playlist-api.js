@@ -79,7 +79,7 @@ router.route('/:id')
         return response.json(songList).end();
       });
 
-      // set this playlist active 
+      // set this playlist active
   })
   .delete( function(request, response) { // delete the playlist with the ID
 
@@ -183,9 +183,10 @@ router.route('/:id/song/:songid?')
       var song = new Song({
                     _playlist: playlist._id,
                     videoname: videoName,
-                    videoid: videoId,
+                    videoid:   videoId,
                     thumbnail: thumbnail,
-                    length: secondsLength,
+                    secvidlen: secondsLength,
+                    position:  playlist.songs.length
                    });
 
       song.save(function (err) {

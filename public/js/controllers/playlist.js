@@ -211,7 +211,7 @@
       .success( function () {
           $scope.feedbackClass   = "btn btn-success";
           $scope.feedbackMessage = "Success";
-          getPlaylists();
+          $scope.getPlaylists();
       })
       .error( function (error) {
           $scope.feedbackClass   = "btn btn-danger";
@@ -240,7 +240,7 @@
           $scope.newPlaylistName = "";
           $scope.feedbackClass   = "input-group-addon text-success";
           $scope.feedbackMessage = "Success";
-          getPlaylists();
+          $scope.getPlaylists();
       })
       .error( function (error) {
           $scope.feedbackClass   = "input-group-addon text-danger";
@@ -274,6 +274,23 @@
           $log.info("Failed to add myself to DJ roster:" + JSON.stringify(error));
       });
     };
+
+    // dj stop using this playlist
+    $scope.djStopThisPlaylist = function () {
+      var uriPath = "/api/djq/";
+
+      $http.delete(uriPath)
+      .success( function (result) {
+            $scope.feedback = "Playlist stopped.";
+      })
+      .error( function (error) {
+        console.log("DJQ RMDJ : " + JSON.stringify(error))
+      });
+    }
+
+    // dj skip this song
+    $scope.djSkipThisSong = function () {
+    }
 
   }]);
 

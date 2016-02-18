@@ -60,18 +60,19 @@ DJ.prototype.playNextSong = function ()
   Playlist.
     find({'username': this.username}).
     where('_id').equals(this.activePlaylist).
-    populate('songs', 'videoname videoid thumbnail').
+    populate('songs', 'videoname videoid thumbnail secvidlen position', null, { sort: { position: -1}}).
     exec(function(err, details)
     {
 
       console.log("~>" + this.username + " is playing the next video!");
       var songCount = details[0].songs.length;
-      var index = songIndex % songCount;
+      var index     = songIndex % songCount;
       var videoid   = details[0].songs[index].videoid;
-
+      var vidLength = details[0].songs[index].secvidlen;
       console.log("Changing video to:" + videoid);
-      _internalServerState.currentPlayingVideo = videoid;
+      _internalServerState.currentPlayingVideo  = videoid;
       _internalServerState.currentVideoProgress = 0;
+      _internalServerState.currentVideoLength   = vidLength;
     });
 
     this.songIndex++;
@@ -135,7 +136,7 @@ DJQueue.prototype.playNextDj = function ()
   if (this.queue.length === 0)
   {
     console.log("playNextDj: No DJs in queue.");
-    return;
+    return -1;
   }
 
   var index = ++this.djIndex % this.queue.length;
@@ -453,8 +454,8 @@ InternalServerState.prototype.resetClientsPlayingCounters = function ()
 InternalServerState.prototype.getVideoState = function ()
 {
   var videoState = {
-    videoId : this.currentPlayingVideo,
-    startSeconds : 0
+    videoId       : this.currentPlayingVideo,
+    videoProgress : this.currentVideoProgress
   }
   return videoState;
 }
@@ -475,9 +476,10 @@ InternalServerState.prototype.fetchClientByGuid = function (guid)
 // if the client is valid, and ahead of our state, sync the server to it
 InternalServerState.prototype.updateCurrentVideoProgressFrom = function (client)
 {
-    var eligible = client.videoPlaying;
+    var eligible = client.videoPlaying();
     var playingCurrent = client.isPlayingThisVideo (this.currentPlayingVideo);
     var hasValidVideoTime = client.videoProgress < this.currentVideoLength;
+
     if (eligible && playingCurrent && hasValidVideoTime)
     {
       if (client.videoProgress > this.currentVideoProgress) {
@@ -632,6 +634,7 @@ InternalServerState.prototype.printState = function ()
   console.log("clientList(len).....:\t" + this.clientList.length);
   console.log("currentPlayingVideo.:\t" + this.currentPlayingVideo);
   console.log("currentVideoLength..:\t" + this.currentVideoLength);
+  console.log("currentVideoProgress:\t" + this.currentVideoProgress);
   console.log("writingGameState....:\t" + this.writingGameState);
   console.log("------------------------------------------");
 }

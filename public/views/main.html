@@ -20,7 +20,13 @@
           <i class="glyphicon glyphicon-plus"></i>
         </span>
         <span id="dj-this-playlist-button" class="input-group-addon" ng-click="djThisPlaylist()">
-          <i class="glyphicon glyphicon-cd"></i>
+          <i class="glyphicon glyphicon-play"></i>
+        </span>
+        <span id="dj-stop-this-playlist-button" class="input-group-addon" ng-click="djStopThisPlaylist()">
+          <i class="glyphicon glyphicon-stop"></i>
+        </span>
+        <span id="dj-skip-this-song-button" class="input-group-addon" ng-click="djSkipThisSong()">
+          <i class="glyphicon glyphicon-step-forward"></i>
         </span>
         <span id="playlist-feedback" ng-model="feedbackMessage" ng-show="feedbackMessage" ng-class="feedbackClass">{{feedbackMessage}}</span>
       </div>

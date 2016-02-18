@@ -36,7 +36,7 @@ module.exports.listen = function(app) {
                                            pingClientInterval);
       function pingClients() {
         var serverVideoState = serverState.getVideoState();
-        console.log('Sending ping with video state:' + JSON.stringify(serverVideoState));
+        //console.log('Sending ping with video state:' + JSON.stringify(serverVideoState));
         io.emit('videostate-sync-request', serverVideoState);
       }
 
