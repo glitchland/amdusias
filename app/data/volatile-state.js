@@ -84,6 +84,10 @@ DJ.prototype.stopSong = function ()
   // do something to stop the song
 }
 
+DJ.prototype.getUsername = function ()
+{
+  return this.username;
+}
 /****************************** DJ QUEUE *********************************/
 // this class represents a queue of djs
 var DJQueue = function ()
@@ -95,7 +99,12 @@ var DJQueue = function ()
 // takes dj adds it to the queue
 DJQueue.prototype.add = function (dj)
 {
-  this.queue.push(dj);
+  // check dj doesn't already exist
+  var username = dj.getUsername();
+  if (username && this.getIndex(username) < 0 )
+  {
+    this.queue.push(dj);
+  }
 }
 
 // get index of dj based on username
@@ -115,19 +124,16 @@ DJQueue.prototype.remove = function (username)
   // remove the dj from the queue
   if (djIndex > -1)
   {
-    this.queue[djIndex].stopSong();
     this.queue.splice(djIndex, 1);
   }
+
+  this.playNextDj();
 }
 
 // allows a dj to skip the current song
 DJQueue.prototype.skip= function (username)
- {
-    var djIndex = this.getIndex(username);
-    if (djIndex > -1)
-    {
-      this.queue[djIndex].stopSong();
-    }
+{
+   this.playNextDj();
 }
 
 // get next DJ
@@ -406,7 +412,7 @@ var InternalServerState = function ()
   this.clientsWithErrors     = 0;
   this.activeClients         = 0;
   this.clientList            = new Array();
-  this.currentPlayingVideo   = "";
+  this.currentPlayingVideo   = "STOP";
   this.currentVideoProgress  = 0;
   this.currentVideoLength    = 0;
   this.lastTimeNextVidCalled = 0;
@@ -431,7 +437,7 @@ InternalServerState.prototype.updateGameState = function ()
 
     // mock lock avoid reads of partial writes
     this.writingGameState = true;
-    this.gameState = state;
+    this.gameState        = state;
     this.writingGameState = false;
 }
 
@@ -451,6 +457,13 @@ InternalServerState.prototype.resetClientsPlayingCounters = function ()
   this.clientsWithErrors = 0;
 };
 
+InternalServerState.prototype.resetVideoState = function ()
+{
+  this.currentPlayingVideo   = "STOP";
+  this.currentVideoProgress  = 0;
+  this.currentVideoLength    = 0;
+}
+
 InternalServerState.prototype.getVideoState = function ()
 {
   var videoState = {
@@ -464,7 +477,7 @@ InternalServerState.prototype.fetchClientByGuid = function (guid)
 {
     var index = this.clientList.map( function(client) {
                         return client.getGuid();
-                      }).indexOf(guid);
+                }).indexOf(guid);
 
     // nothing was found, pass this down
     if (index < 0)
@@ -642,8 +655,6 @@ InternalServerState.prototype.printState = function ()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++/
 /************************** Setup And External ***************************
  *************************************************************************/
-//var testDj = new DjState("demo");
-//testDj.setActivePlaylist("56bad652dadf239a122d3b83")
 
 // the volatile server state
 var _internalServerState = new InternalServerState ();
@@ -687,6 +698,7 @@ function pruneInactiveClients()
 // called from dj-queue - creates a dj and adds it to the queue
 exports.addDJ = function (username, playlist)
 {
+  // XXX do nothing if this dj AND playlist already exist
   var dj = new DJ (username, playlist);
   _DJQueue.add (dj);
   _DJQueue.printDebug();
@@ -695,6 +707,7 @@ exports.addDJ = function (username, playlist)
 // called from dj-queue - removes a dj from a queue
 exports.rmDJ = function (username)
 {
+  _internalServerState.resetVideoState();
   _DJQueue.remove (username);
   _DJQueue.printDebug();
 }
@@ -702,6 +715,7 @@ exports.rmDJ = function (username)
 // called from dj-queue - stops currently playing song
 exports.djSkipSong = function (username)
 {
+  _internalServerState.resetVideoState();
   _DJQueue.skip (username);
 }
 

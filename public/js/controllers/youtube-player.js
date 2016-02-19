@@ -35,7 +35,7 @@
     };
 
     // initialize socket factory
-    var tokenFinder = $interval(function() {
+    var tokenFinder = $interval( function() {
       $log.info("Youtube player getToken firing...");
       if(!jwt) {
         $log.info("Youtube player attempting to get token...");
@@ -109,10 +109,12 @@
     };
 
     // play the video if it meets the conditions to play
-    $scope.conditionallyPlayVideo = function (remoteState) {
+    $scope.conditionallyPlayVideo = function (remoteState)
+    {
       $log.info("Handling videostate-sync-request...");
 
-      if(!remoteState) {
+      if(!remoteState)
+      {
         $log.info("RemoteState is null.");
         return -1;
       }
@@ -121,8 +123,10 @@
       $log.info("remoteState.videoid:"+remoteState.videoId);
       $log.info("remoteState.videoProgress:"+remoteState.videoProgress);
 
-      if(!$scope.localVideoState.isVideoPlaying &&
-          $scope.localVideoState.videoId !== remoteState.videoId) {
+      var videoPlaying = $scope.localVideoState.isVideoPlaying;
+      var staleVideoId = ($scope.localVideoState.videoId !== remoteState.videoId);
+      if((!videoPlaying && staleVideoId))
+      {
 
         $scope.localVideoState.videoId = remoteState.videoId;
         $scope.localVideoState.videoProgress = remoteState.videoProgress;
@@ -133,6 +137,20 @@
         // we set the video playing local state here to prevent race
         $scope.localVideoState.isVideoPlaying = true;
       }
+
+      // special case, remote dj stopped video
+      if (remoteState.videoId === "STOP")
+      {
+        $scope.localVideoState.videoId       = null;
+        $scope.localVideoState.videoProgress = 0;
+
+        $scope.dynamic.change($scope.localVideoState.videoId,
+                              $scope.localVideoState.videoProgress);
+
+        // we set the video playing local state here to prevent race
+        $scope.localVideoState.isVideoPlaying = false;
+      }
+
     };
 
     // utilities
