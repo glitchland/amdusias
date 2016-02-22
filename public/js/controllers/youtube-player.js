@@ -123,9 +123,9 @@
       $log.info("remoteState.videoid:"+remoteState.videoId);
       $log.info("remoteState.videoProgress:"+remoteState.videoProgress);
 
-      var videoPlaying = $scope.localVideoState.isVideoPlaying;
+      //var videoPlaying = $scope.localVideoState.isVideoPlaying;
       var staleVideoId = ($scope.localVideoState.videoId !== remoteState.videoId);
-      if((!videoPlaying && staleVideoId))
+      if(staleVideoId)
       {
 
         $scope.localVideoState.videoId = remoteState.videoId;

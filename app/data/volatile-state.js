@@ -96,6 +96,14 @@ var DJQueue = function ()
   this.djIndex      = 0;
 };
 
+DJQueue.prototype.currentPlayingUser = function ()
+{
+  if (this.queue.length < 1)
+    return -1;
+  var index = this.djIndex % this.queue.length;
+  var username = this.queue[index].getUsername();
+  return username;
+}
 // takes dj adds it to the queue
 DJQueue.prototype.add = function (dj)
 {
@@ -115,25 +123,38 @@ DJQueue.prototype.getIndex = function (username)
                     }).indexOf(username);
 }
 
+DJQueue.prototype.correctUser = function (username)
+{
+    if (username === this.currentPlayingUser())
+    {
+      return 1;
+    }
+    return 0;
+}
+
 // removes a dj from the queue based on username
 DJQueue.prototype.remove = function (username)
 {
   // remove the dj from the queue
   var djIndex = this.getIndex(username);
 
-  // remove the dj from the queue
-  if (djIndex > -1)
+  if (djIndex < 0)
   {
-    this.queue.splice(djIndex, 1);
+    return;
   }
 
-  this.playNextDj();
+  // remove the dj from the queue
+  this.queue.splice(djIndex, 1);
+
+  // if I am playing now, play the next dj
+  if (username === this.currentPlayingUser())
+    this.playNextDj();
 }
 
 // allows a dj to skip the current song
-DJQueue.prototype.skip= function (username)
+DJQueue.prototype.skip = function (username)
 {
-   this.playNextDj();
+  this.playNextDj();
 }
 
 // get next DJ
@@ -412,7 +433,7 @@ var InternalServerState = function ()
   this.clientsWithErrors     = 0;
   this.activeClients         = 0;
   this.clientList            = new Array();
-  this.currentPlayingVideo   = "STOP";
+  this.currentPlayingVideo   = "";
   this.currentVideoProgress  = 0;
   this.currentVideoLength    = 0;
   this.lastTimeNextVidCalled = 0;
@@ -466,6 +487,7 @@ InternalServerState.prototype.resetVideoState = function ()
 
 InternalServerState.prototype.getVideoState = function ()
 {
+
   var videoState = {
     videoId       : this.currentPlayingVideo,
     videoProgress : this.currentVideoProgress
@@ -696,7 +718,7 @@ function pruneInactiveClients()
 /************************** External Methods ****************************
  ************************************************************************/
 // called from dj-queue - creates a dj and adds it to the queue
-exports.addDJ = function (username, playlist)
+exports.DJadd = function (username, playlist)
 {
   // XXX do nothing if this dj AND playlist already exist
   var dj = new DJ (username, playlist);
@@ -705,16 +727,24 @@ exports.addDJ = function (username, playlist)
 };
 
 // called from dj-queue - removes a dj from a queue
-exports.rmDJ = function (username)
+exports.DJrm = function (username)
 {
+  if ( !_DJQueue.correctUser(username) )
+  {
+    return;
+  }
   _internalServerState.resetVideoState();
   _DJQueue.remove (username);
   _DJQueue.printDebug();
 }
 
 // called from dj-queue - stops currently playing song
-exports.djSkipSong = function (username)
+exports.DJskip = function (username)
 {
+  if ( !_DJQueue.correctUser(username) )
+  {
+    return;
+  }
   _internalServerState.resetVideoState();
   _DJQueue.skip (username);
 }

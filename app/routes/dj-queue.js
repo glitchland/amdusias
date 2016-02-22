@@ -16,10 +16,11 @@ var router = express.Router();
 /**************************** API ***************************************/
 router.route('/')
   .all(function (request, response, next) {
-    var username = request.user.username;
+    var username   = request.user.username;
     var playlistId = request.body.playlistId;
 
     if(!username) {
+      console.log("ERROR: No username in request to DJ-queue");
       return response.status(failure).json("no username error").end();
     }
 
@@ -27,22 +28,23 @@ router.route('/')
       playlistId = null;
     }
 
-    request.username = username;
     request.playlist = playlistId;
     next();
-  })
-  .post( function(request, response) { // join dj rotation
-
-    state.addDJ(request.username, request.playlist);
-
-  })
-  .get( function(request, response) { //status
+  }) // join dj queue
+  .post( function(request, response) {
+    state.DJadd(request.user.username, request.playlist);
+    return response.status(200).end();
+  }) // skip a song
+  .put( function(request, response) {
+    state.DJskip(request.user.username);
+    return response.status(200).end();
+  }) //
+  .get( function(request, response) {
     return response.status(200).json(state.getState()).end();
-  })
+  }) // leave dj queue
   .delete( function(request, response) { //remove dj
-
-    state.rmDJ(request.username);
-
+    state.DJrm(request.user.username);
+    return response.status(200).end();
   });
 
 module.exports = router;

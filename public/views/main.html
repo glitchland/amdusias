@@ -1,16 +1,16 @@
 <div ng-controller="MainController as mainCtrl">
   <!-- Playlists -->
-  <div id="playlist-ui" ng-controller="PlaylistController as playlistCtrl">
+  <div ng-controller="PlaylistController as playlistCtrl">
 
     <!-- Open playlist UI -->
-    <form class="form-inline" role="form">
+    <form id="playlist-ui" class="form-inline" role="form">
       <div class="input-group">
         <!-- Play this playlist -->
         <select class="form-control" ng-model="selectedPlaylist" ng-change="changedValue(selectedPlaylist)"  ng-options="item.name for item in playlists">
           <option value="">Select Playlist</option>
         </select>
         <span id="curate-playlist-button" class="input-group-addon" ng-click="toggle()">
-          <i class="glyphicon glyphicon-edit"></i>
+          <i class="glyphicon glyphicon-search"></i>
         </span>
         <span id="delete-playlist-button" class="input-group-addon" ng-click="deletePlaylist()">
           <i class="glyphicon glyphicon-remove"></i>
@@ -83,8 +83,8 @@
         <three-panel game-state="theGameState" assimp-url="assimpModelUrl"><div id="3d-css-panel"></div></three-panel>
         <div class="row">
           <div class="col-md-12">
-            <button ng-click="changeModel()">change model</button>
-            <input ng-model="assimpModelUrl"></input>
+            <button ng-click="changeModel()">Dance!</button>
+            <!---<input ng-model="assimpModelUrl"></input>-->
           </div>
         </div>
       </div>

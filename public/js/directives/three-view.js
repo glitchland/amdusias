@@ -301,7 +301,9 @@
 
             function addSky () {
               //http://threejs.org/docs/#Reference/Materials/ShaderMaterial
-              var geometry = new THREE.SphereGeometry(15, 15, 15);
+            //  var geometry = new THREE.SphereGeometry(15, 15, 15);
+
+              var geometry  = new THREE.PlaneGeometry(10, 20);
 
               // load shaders from remote instead of from the dom
               var fragShader = null;
@@ -311,16 +313,16 @@
                 fragShader = shader;
                 loadRemoteFile( "shaders/sky/vertex.c")
                 .then( function (shader) {
-                  vertShader = shader;
+                 vertShader = shader;
                   shaderMaterial = new THREE.ShaderMaterial( {
                     uniforms: {
-                        tExplosion: {
-                            type: "t",
-                            value: THREE.ImageUtils.loadTexture( 'img/explosion.png' )
-                        },
-                        time: { // float initialized to 0
+                        uTime: { // float initialized to 0
                             type: "f",
                             value: 0.0
+                        },
+                        uRes: {
+                            type: "v2",
+                            value: new THREE.Vector2(40,40)
                         }
                     },
                     vertexShader:   vertShader,
@@ -328,9 +330,17 @@
                   });
 
                   skyBox = new THREE.Mesh(geometry, shaderMaterial);
-                  skyBox.scale.set(-1, 1, 1);
-                  skyBox.eulerOrder  = 'XZY';
+                  //skyBox.scale.set(-1, 1, 1);
+                  //skyBox.eulerOrder  = 'XZY';
                   skyBox.renderDepth = 1000.0;
+
+                  skyBox.visible = true;
+
+                  skyBox.position.x = 0;
+                  skyBox.position.y = 0;
+                  skyBox.position.z = -10;
+
+                  skyBox.rotation = new THREE.Vector3( 0, 90, 0 );
                   glScene.add( skyBox );
 
                 });
@@ -392,7 +402,7 @@
 
               // This is a hack, it is for the shader applied to the sky material
               if (shaderMaterial)
-                shaderMaterial.uniforms[ 'time' ].value = .00025 * ( Date.now() - start );
+                shaderMaterial.uniforms[ 'uTime' ].value = .00025 * ( Date.now() - start );
 
               glRenderer.render(glScene, camera);
               cssRenderer.render(cssScene, camera);

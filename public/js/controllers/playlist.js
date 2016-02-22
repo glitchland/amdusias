@@ -284,12 +284,21 @@
             $scope.feedback = "Playlist stopped.";
       })
       .error( function (error) {
-        console.log("DJQ RMDJ : " + JSON.stringify(error))
+        console.log("DJQ RMDJ : " + JSON.stringify(error));
       });
     }
 
     // dj skip this song
     $scope.djSkipThisSong = function () {
+      var uriPath = "/api/djq/";
+
+      $http.put(uriPath)
+      .success( function (result) {
+          $scope.feedback = "Song skipped.";
+      })
+      .error( function (error) {
+        console.log("DJQ Skip : " + JSON.stringify(error))
+      });
     }
 
   }]);
