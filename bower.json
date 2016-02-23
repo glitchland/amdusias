@@ -2,7 +2,7 @@
     "name": "Amdusias",
     "version": "0.0.1",
     "dependencies": {
-        "angular"               : "latest",
+        "angular"               : "~1.5.0",
         "angular-route"         : "latest",
         "angular-scroll-glue"   : "latest",
         "angular-youtube-mb"    : "latest",
@@ -12,6 +12,9 @@
         "ng-pageslide"          : "latest",
         "socket.io-client"      : "latest",
         "threejs"               : "latest"
+    },
+    "resolutions": {
+      "angular" : "~1.5.0"
     },
     "overrides": {
     "threejs": {

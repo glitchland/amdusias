@@ -50,7 +50,7 @@ app.use('/api/djq', user.checkAuthenticated, djManager);
 
 // start the server
 var httpServer = http.Server(app);
-httpServer.listen(3000, function (){
+httpServer.listen(process.env.PORT || 3000, function (){
     console.log("server listening on port", config.listenPort);
 });
 
