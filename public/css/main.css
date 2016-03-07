@@ -81,6 +81,11 @@
   /*border: 3px solid #ccddcc;*/
 }
 
+#chat-message {
+  font-size:small;
+  /*border: 3px solid #ccddcc;*/
+}
+
 /* highlight invalid input*/
 .highlight {
     background:#C8C8C8;

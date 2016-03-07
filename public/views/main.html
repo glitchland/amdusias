@@ -93,12 +93,13 @@
       <!-- place where we will render the WebGL stuff -->
       <div id="three-panel" class="col-md-10">
         <three-panel game-state="theGameState" assimp-url="assimpModelUrl"><div id="3d-css-panel"></div></three-panel>
+        <!--
         <div class="row">
           <div class="col-md-12">
-            <button ng-click="changeModel()">Dance!</button>
+            <button ng-click="changeModel()">Dance!</button>-->
             <!---<input ng-model="assimpModelUrl"></input>-->
-          </div>
-        </div>
+        <!--  </div>
+        </div> -->
       </div>
 
       <!-- socket.io and chat panel -->
@@ -112,14 +113,9 @@
                   <li class="media" ng-repeat="message in chatCtrl.messages track by $index">
                     <div class="media-body" id="chat-message-body">
                       <div class="media" id="chat-message">
-                        <a class="pull-left" href="#">
-                          <img class="media-object img-circle " src="img/user.jpg" />
-                        </a>
-                        <div class="media-body" >
-                          {{message.data}}
-                          <br />
-                          <small class="text-muted">{{message.user}} | {{message.date | date:'yyyy-MM-dd HH:mm:ss'}}</small>
-                          <hr />
+                        <div class="media-body">
+                          <!-- <small class="text-muted">{{message.user}} | {{message.date | date:'yyyy-MM-dd HH:mm:ss'}}</small> -->
+                          {{message.user}} ~> {{message.data}}
                         </div>
                       </div>
                     </div>
@@ -128,7 +124,7 @@
               </div>
               <div class="panel-footer" id="chat-input-box">
                 <div class="input-group">
-                  <input type="text" class="form-control" ng-class="{highlight:chatForm.messageText.$error.required || chatForm.messageText.$error.minlength || chatForm.messageText.$error.maxlength}" ng-model="messageText" name="messageText" required ng-minlength="3" ng-maxlength="512" placeholder="Enter Message" />
+                  <input type="text" autocomplete="off" class="form-control" ng-class="{highlight:chatForm.messageText.$error.required || chatForm.messageText.$error.minlength || chatForm.messageText.$error.maxlength}" ng-model="messageText" name="messageText" required ng-minlength="3" ng-maxlength="512" placeholder="Enter Message" />
                   <span class="input-group-btn">
                     <input class="btn btn-info" type="submit" ng-disabled="!socketConnected" value="SEND"/>
                   </span>

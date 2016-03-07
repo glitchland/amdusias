@@ -143,8 +143,10 @@
 
               var ratio = Math.min(elementWidth / width, elementHeight / height);
 
-              cssObject.scale.x /= width*ratio ;
-              cssObject.scale.y /= height*ratio;
+              console.log("RATIO: " + ratio);
+
+              cssObject.scale.x /= width * 15.0;
+              cssObject.scale.y /= height * 40.0;
               //console.log("PLANEMESH:" + planeMesh.geometry.width);
 
               return cssObject;
@@ -192,6 +194,7 @@
 
   						//	previous = assimpjson;
   						//});
+              /*
               if(!dancing) {
                 //glScene.add(android);
                 dancing = true;
@@ -200,7 +203,7 @@
                 //glScene.remove(objName);
                 dancing = false;
               }
-
+              */
   					}
 
   					//loadModel(scope.assimpUrl);
