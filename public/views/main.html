@@ -29,6 +29,19 @@
           <i class="glyphicon glyphicon-step-forward"></i>
         </span>
         <span id="playlist-feedback" ng-model="feedbackMessage" ng-show="feedbackMessage" ng-class="feedbackClass">{{feedbackMessage}}</span>
+        <!-- End of playlist/dj controls -->
+
+        <!-- WebUI -> Three.js controller -->
+        <div ng-controller="ThreeWebUIController as threeWUICtrl">
+          <!-- Select An Avatar -->
+          <select class="form-control" ng-model="selectedAvatar" ng-change="changedValue(selectedAvatar)"  ng-options="item.name for item in avatars">
+            <option value="">Select Avatar</option>
+          </select>
+        </div>
+        <!-- Toggle dance -->
+        <span id="toggle-dance-button" class="input-group-addon" ng-click="toggleDance()">
+          <i class="glyphicon glyphicon-heart"></i>
+        </span>
       </div>
     </form>
 
@@ -72,7 +85,6 @@
           <span id="playlist-edit-menu-up" class="input-group-addon" ng-click="toggle()"><i class="glyphicon glyphicon-menu-up"></i></span>
         </div>
       </div> <!-- XXX : break this up and make it more legible -->
-
     </pageslide>
   </div>
 

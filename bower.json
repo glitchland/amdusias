@@ -11,7 +11,7 @@
         "font-awesome"          : "latest",
         "ng-pageslide"          : "latest",
         "socket.io-client"      : "latest",
-        "threejs"               : "latest"
+        "threejs"               : "#r74"
     },
     "resolutions": {
       "angular" : "~1.5.0"

@@ -1,3 +1,6 @@
+/*
+ * Move this up to three-webui
+ */
 (function() {
 
 angular.module('amdusias')
