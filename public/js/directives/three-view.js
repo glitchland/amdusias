@@ -1,14 +1,147 @@
 // http://jsfiddle.net/zbjLh/2/
 (function() {
   angular.module('amdusias')
-  .directive('threePanel', ['$window', '$log', '$http', function ($window, $log, $http) {
+  .directive('threePanel', ['$window', '$log', '$http', '$rootScope', function ($window, $log, $http, $rootScope) {
+
+    // Avatar array built from game state
+    // addAvatar
+    // rmAvatar
+    //
+    var AvatarGroup = function ()
+    {
+      this.avatars = [];
+    };
+
+    AvatarGroup.prototype.add = function (avatar)
+    {
+      this.avatars.push (avatar);
+    };
+
+    AvatarGroup.prototype.update = function ( delta )
+    {
+      for ( var i = 0; i < this.avatars.length; i++ )
+      {
+        this.avatars[i].updateAnimation ( delta );
+      }
+    };
+
+    // Avatar class to store each avatar 3d model
+    var Avatar = function (geometry, materials)
+    {
+      this.geometry   = geometry;
+      this.materials  = materials;
+      this.mesh       = null;
+      this.scale      = 0;
+      this.animMixer  = null;
+      this.animations = {};
+      this.isDancing  = false;
+      this.initialize();
+    };
+
+    // this initialzes the mesh
+    Avatar.prototype.initialize = function ()
+    {
+
+      var scaleFactor = 0.05;
+      this.scale = 7 * scaleFactor;
+
+      this.materials.forEach( function ( material ) {
+        material.skinning = true;
+      } );
+
+      var mat = new THREE.MeshFaceMaterial ( this.materials );
+      this.mesh = new THREE.SkinnedMesh ( this.geometry, mat );
+
+      this.mesh.scale.set(this.scale, this.scale, this.scale);
+      this.mesh.position.z = this.getRandomArbitrary(-3.0, 3.0); // (+)near, (-)far
+      this.mesh.position.x = this.getRandomArbitrary(-3.0, 3.0); // (-)left, (+)right
+      this.mesh.position.y = 1.0; //(+)up-(-)down
+
+      this.setName("");
+
+      // animation types
+      // THREE.LoopOnce
+      // THREE.LoopRepeat
+      // THREE.LoopPingPong
+
+      // idle animation
+      this.animMixer = new THREE.AnimationMixer( this.mesh );
+      this.animations.idle = this.animMixer.clipAction( this.geometry.animations[ 1 ] );
+      this.animations.idle.setLoop( THREE.LoopRepeat );
+      this.animations.idle.setEffectiveWeight( 1 );
+
+      this.animations.dance = this.animMixer.clipAction( this.geometry.animations[ 0 ] );
+      this.animations.dance.setLoop( THREE.LoopRepeat );
+      this.animations.dance.setEffectiveWeight( 1 );
+
+      // THREE.LoopOnce
+      // THREE.LoopRepeat
+      // THREE.LoopPingPong
+
+      this.animations.idle.play ();
+    };
+
+    Avatar.prototype.setName = function (name)
+    {
+      this.mesh.name = name;
+    };
+
+    Avatar.prototype.addToScene = function (scene)
+    {
+      scene.add( this.mesh );
+    };
+
+    Avatar.prototype.getRandomArbitrary = function (min, max)
+    {
+      return Math.random() * (max - min) + min;
+    };
+
+    Avatar.prototype.fadeAnimation = function (fromName, toName)
+    {
+          var fromThis = this.animations[ fromName ].play();
+          var toThis   = this.animations[ toName   ].play();
+
+          fromThis.enabled = true;
+          toThis.enabled = true;
+
+          fromThis.crossFadeTo( toThis, 0.3 );
+    };
+
+    Avatar.prototype.toggleDance = function ()
+    {
+      if ( this.isDancing )
+      {
+        this.fadeAnimation ("dance", "idle");
+        this.isDancing = false;
+      }
+      else
+      {
+        this.fadeAnimation ("idle", "dance");
+        this.isDancing = true;
+      }
+    };
+
+    Avatar.prototype.updateAnimation = function ( delta )
+    {
+      if ( this.animMixer )
+        this.animMixer.update( delta );
+    };
+
+
+  // this fades from idle to dancing animation
+
+///////////////////////////////////////////////////////////////////////
+      $rootScope.$on('three-view-avatar', function (event, data) {
+        $log.info("This is a new avatar event:" + data);
+      });
 
       // directive code
 			return {
 				restrict: "E",
 				scope: {
-					assimpUrl: "=assimpUrl",
-          gameState: "=gameState"
+					assimpUrl: "=assimpUrl", //These are passed in via directive element attribs
+          gameState: "=gameState",
+          isDancing: "="
 				},
 				link: function (scope, element, attr) {
 
@@ -19,36 +152,19 @@
             var cssRenderer;
             var viewportHeight;
             var viewportWidth;
-            var _g_clock;
-            var _g_animations = {};
-            var _g_animations_mixer;
+
+            // avatars
+            var _avatarGroup = new AvatarGroup ();
 
             // for shaders
             var start = Date.now();
             var shaderMaterial = null;
 
-            var dancing = false; // XXX: For testing model load unload.
-
-            var avatarModels = {
-              "models" : [
-                {"id" : 0, "url" : "3d-assets/models/android/animations.js"},
-                {"id" : 1, "url" : "3d-assets/models/android/animations.js"},
-              ]
-            };
-
-            var android; //XXX Testing
-            var animOffset    = 0,   // starting frame of animation
-            	walking         = false,
-            	duration        = 1000, // milliseconds to complete animation
-            	keyframes       = 20,   // total number of animation frames
-            	interpolation   = duration / keyframes, // milliseconds per frame
-            	lastKeyframe    = 0,    // previous keyframe
-            	currentKeyframe = 0;
-
             ////////////////////////////
             // functions
             ///////////////////////////
-            function createCssRenderer(width, height) {
+            function createCssRenderer (width, height)
+            {
 
               var cssRenderer = new THREE.CSS3DRenderer();
               cssRenderer.setSize(width, height);
@@ -64,7 +180,8 @@
 
             }
 
-            function createGlRenderer(width, height) {
+            function createGlRenderer(width, height)
+            {
               var glRenderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
 
               glRenderer.setClearColor( 0x003399, 0.5 );
@@ -173,10 +290,9 @@
 
   					// Load jeep model using the AssimpJSONLoader
   					//var loader1 = new THREE.AssimpJSONLoader();
-            // XXX: Toggle dance
   					scope.$watch("assimpUrl", function(newValue, oldValue) {
   						//if (newValue != oldValue) loadModel(newValue);
-              toggleDance(newValue);
+              // /toggleDance(newValue);
   					});
 
             // sync up the gamestate with the controller
@@ -185,7 +301,52 @@
                 $log.info ("Directive gamestate: " + JSON.stringify(newValue));
             });
 
-  					function toggleDance(modelUrl) {
+            // get the toggle, is char dancing?
+            /*scope.$watch("isDancing", function(newValue, oldValue) {
+              $log.info ("Directive isDancing oldValue: " + JSON.stringify(oldValue));
+              $log.info ("Directive isDancing newValue: " + JSON.stringify(newValue));
+            });*/
+            // handle events from the three-js webui
+            $rootScope.$on('three-view-dance', function (event, data) {
+              $log.info("This is a toggle dance event:" + data);
+              if ( _g_isDancing )
+              {
+                fadeAnimation ("dance", "idle");
+                _g_isDancing = false;
+              }
+              else
+              {
+                fadeAnimation ("idle", "dance");
+                _g_isDancing = true;
+              }
+            });
+
+            // this fades from idle to dancing animation
+            function fadeAnimation (fromName, toName)
+            {
+                  var fromThis = _g_animations[ fromName ].play();
+                  var toThis   = _g_animations[ toName   ].play();
+
+                  fromThis.enabled = true;
+                  toThis.enabled = true;
+
+                  fromThis.crossFadeTo( toThis, 0.3 );
+            }
+
+  					function changeModel ()
+            { //modelUrl
+              /*
+              if($scope.isDancing)
+              {
+                _g_animations.idle.play();
+                $scope.isDancing = false;
+              }
+              else
+              {
+                _g_animations.dancing.play();
+                $scope.isDancing = true;
+              }
+*/
   						//loader1.load(modelUrl, function (assimpjson) {
   						//	assimpjson.scale.x = assimpjson.scale.y = assimpjson.scale.z = 0.2;
   					  //	assimpjson.updateMatrix();
@@ -246,7 +407,6 @@
   						glRenderer.setSize(viewportWidth, viewportHeight);
   						cssRenderer.setSize(viewportWidth, viewportHeight);
 
-
               element[0].appendChild(cssRenderer.domElement);
 
             	// when window resizes, also resize this renderer
@@ -303,14 +463,11 @@
 
               // Add models into a cache that can load
               var jsonLoader = new THREE.JSONLoader();
-              for (var i=0; i < avatarModels.length; i++){
-
-              }
 
               // load animated model into the scene
-              jsonLoader.load( "3d-assets/models/cuboid_kakula.json", addModelToScene );
-              jsonLoader.load( "3d-assets/models/cuboid_mozter.json", addModelToScene );
-              jsonLoader.load( "3d-assets/models/cuboid_spock.json",  addModelToScene );
+              jsonLoader.load( "3d-assets/models/cuboid_kakula.json", loadAvatarModel );
+              jsonLoader.load( "3d-assets/models/cuboid_mozter.json", loadAvatarModel );
+              jsonLoader.load( "3d-assets/models/cuboid_spock.json",  loadAvatarModel );
 
               var light = new THREE.SpotLight( 0xffffff, 2, 4500 );
               light.position.set(0, 2, 6);
@@ -325,6 +482,65 @@
               addSky();
   					}
 
+            // create a new avatar object from the loaded geometry
+            function loadAvatarModel ( geometry, materials )
+            {
+              var avatar = new Avatar ( geometry, materials );
+              avatar.addToScene( glScene );
+              _avatarGroup.add (avatar);
+            }
+
+            // XXX: DEPRECATED add a model to the scene
+            /*
+            function addModelToScene( geometry, materials )
+            {
+
+              //console.log("geometry: "  + JSON.stringify(geometry));
+              //console.log("materials: " + JSON.stringify(materials));
+              var scaleFactor = 0.05;
+              var scale = 7 * scaleFactor;
+
+              materials.forEach( function ( material ) {
+                material.skinning = true;
+                //material.shading = THREE.FlatShading;
+              } );
+
+//https://threejsdoc.appspot.com/doc/three.js/examples.source/webgl_materials.html.html
+            	var mat  = new THREE.MeshFaceMaterial( materials );
+
+            	var mesh = new THREE.SkinnedMesh( geometry, mat );
+
+
+            	mesh.scale.set(scale, scale, scale);
+              mesh.position.z = getRandomArbitrary(-3.0, 3.0); // (+)near, (-)far
+              mesh.position.x = getRandomArbitrary(-3.0, 3.0); //(-)left-(+)right
+              mesh.position.y = 1.0; //(+)up-(-)down
+
+            //  mesh.rotateY(45);
+
+              mesh.name = "chicken";
+
+
+              // create animation
+              //http://www.yomotsu.net/blog/2015/10/31/three-r73-anim.html
+              //http://yomotsu.net/blog/2015/10/31/three-r73-anim.html
+              _g_animations_mixer = new THREE.AnimationMixer( mesh );
+              _g_animations.idle  = _g_animations_mixer.clipAction( geometry.animations[ 1 ] );
+              _g_animations.dance = _g_animations_mixer.clipAction( geometry.animations[ 0 ] );
+              _g_animations.idle.setEffectiveWeight( 1 );
+              _g_animations.dance.setEffectiveWeight( 1 );
+
+              // THREE.LoopOnce
+              // THREE.LoopRepeat
+              // THREE.LoopPingPong
+              _g_animations.idle.setLoop( THREE.LoopRepeat );
+            //  _g_animations.dance.setLoop( THREE.LoopOnce, 0 );
+              _g_animations.dance.setLoop( THREE.LoopRepeat );
+              _g_animations.idle.play();
+
+              glScene.add( mesh );
+            }
+*/
             // a structure to hold shaders that are loaded from the server
             function dataLoader() {
                 this.data_count = 0;
@@ -389,60 +605,6 @@
               });
             }
 
-            function getRandomArbitrary(min, max) {
-              return Math.random() * (max - min) + min;
-            }
-
-            // add a model to the scene
-            function addModelToScene( geometry, materials )
-            {
-
-              //console.log("geometry: "  + JSON.stringify(geometry));
-              //console.log("materials: " + JSON.stringify(materials));
-              var scaleFactor = 0.05;
-              var scale = 7 * scaleFactor;
-
-              materials.forEach( function ( material ) {
-                material.skinning = true;
-                //material.shading = THREE.FlatShading;
-              } );
-
-//https://threejsdoc.appspot.com/doc/three.js/examples.source/webgl_materials.html.html
-            	var mat  = new THREE.MeshFaceMaterial( materials );
-
-            	var mesh = new THREE.SkinnedMesh( geometry, mat );
-
-
-            	mesh.scale.set(scale, scale, scale);
-              mesh.position.z = getRandomArbitrary(-3.0, 3.0); // (+)near, (-)far
-              mesh.position.x = getRandomArbitrary(-3.0, 3.0); //(-)left-(+)right
-              mesh.position.y = 1.0; //(+)up-(-)down
-
-            //  mesh.rotateY(45);
-
-              mesh.name = "chicken";
-
-
-              // create animation
-              //http://www.yomotsu.net/blog/2015/10/31/three-r73-anim.html
-              //http://yomotsu.net/blog/2015/10/31/three-r73-anim.html
-              _g_animations_mixer = new THREE.AnimationMixer( mesh );
-              _g_animations.idle  = _g_animations_mixer.clipAction( geometry.animations[ 0 ] );
-              _g_animations.dance = _g_animations_mixer.clipAction( geometry.animations[ 3 ] );
-              _g_animations.idle.setEffectiveWeight( 1 );
-              _g_animations.dance.setEffectiveWeight( 1 );
-
-              // THREE.LoopOnce
-              // THREE.LoopRepeat
-              // THREE.LoopPingPong
-              _g_animations.idle.setLoop( THREE.LoopRepeat );
-            //  _g_animations.dance.setLoop( THREE.LoopOnce, 0 );
-              _g_animations.dance.setLoop( THREE.LoopRepeat );
-              _g_animations.dance.play();
-
-              glScene.add( mesh );
-            }
-
   					// handle window resize
   					function onWindowResize(event) {
               var h = angular.element(document.querySelector('#three-panel'))[0].offsetHeight;
@@ -482,8 +644,8 @@
               var delta = _g_clock.getDelta();
               var theta = _g_clock.getElapsedTime();
 
-              if ( _g_animations_mixer)
-                 _g_animations_mixer.update( delta );
+              if ( _avatarGroup )
+                _avatarGroup.update( delta );
 
               // This is a hack, it is for the shader applied to the sky material
               if (shaderMaterial)

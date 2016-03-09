@@ -28,20 +28,21 @@
         <span id="dj-skip-this-song-button" class="input-group-addon" ng-click="djSkipThisSong()">
           <i class="glyphicon glyphicon-step-forward"></i>
         </span>
-        <span id="playlist-feedback" ng-model="feedbackMessage" ng-show="feedbackMessage" ng-class="feedbackClass">{{feedbackMessage}}</span>
-        <!-- End of playlist/dj controls -->
 
         <!-- WebUI -> Three.js controller -->
         <div ng-controller="ThreeWebUIController as threeWUICtrl">
+          <!-- Toggle dance -->
+          <span id="toggle-dance-button" class="input-group-addon" ng-click="toggleDance()">
+            <i class="glyphicon glyphicon-heart"></i>
+          </span>
+
           <!-- Select An Avatar -->
-          <select class="form-control" ng-model="selectedAvatar" ng-change="changedValue(selectedAvatar)"  ng-options="item.name for item in avatars">
+          <select id="select-avatar" class="form-control" ng-model="selectedAvatar" ng-change="changedValue(selectedAvatar)"  ng-options="item.name for item in avatars">
             <option value="">Select Avatar</option>
           </select>
         </div>
-        <!-- Toggle dance -->
-        <span id="toggle-dance-button" class="input-group-addon" ng-click="toggleDance()">
-          <i class="glyphicon glyphicon-heart"></i>
-        </span>
+
+        <span id="playlist-feedback" ng-model="feedbackMessage" ng-show="feedbackMessage" ng-class="feedbackClass">{{feedbackMessage}}</span>
       </div>
     </form>
 

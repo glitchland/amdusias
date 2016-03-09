@@ -51,6 +51,18 @@
   cursor: pointer !important;
 }
 
+#toggle-dance-button {
+  height : 45px;
+  position: fixed;
+  top: 3px; /* XXX bug, the layout of this button is broken */
+  cursor: pointer !important;
+}
+
+#select-avatar {
+  position: relative;
+  left: 45px; /* XXX bug, for some reason we render over toggle dance*/
+}
+
 /* chat panel style */
 #chat-pane {
   position: relative;
