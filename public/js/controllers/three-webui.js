@@ -1,10 +1,10 @@
 (function() {
 
   angular.module('amdusias')
-  .controller('ThreeWebUIController', ['$scope', '$interval', '$http', '$log', function($scope, $interval, $http, $log) {
+  .controller('ThreeWebUIController', ['$scope', '$interval', '$http', '$log', '$rootScope', function($scope, $interval, $http, $log, $rootScope) {
 
-    $scope.selectedAvatar = null;
-    $scope.avatars        = [
+    $scope.selectedAvatar  = null;
+    $scope.avatars         = [
       {
         "name": "Kakula"
       },
@@ -16,13 +16,27 @@
       }
     ];
 
+/*
+    $scope.toggleDance = function() {
+      if ($scope.isAvatarDancing)
+      {
+        $scope.isAvatarDancing = false;
+      }
+      else
+      {
+        $scope.isAvatarDancing = true;
+      }
+      $log.info("Toggle Dance: " + $scope.isAvatarDancing);
+    };
+*/
     // do something when the dropdown is changed
     $scope.changedValue = function (avatar) {
       console.log("AVATAR CHANGED: " + JSON.stringify(avatar));
+      $rootScope.$emit('three-view-change-avatar', avatar.name);
     }
 
-    $scope.dance = function () {
-      console.log("Toggle Dance Clicked");
+    $scope.toggleDance = function () {
+      $rootScope.$emit('three-view-dance', "");
     }
 
   }]);

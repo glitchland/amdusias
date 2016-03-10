@@ -9,13 +9,57 @@
     //
     var AvatarGroup = function ()
     {
+      this.scene   = null;
       this.avatars = [];
+    };
+
+    AvatarGroup.prototype.setScene = function (scene)
+    {
+      this.scene = scene;
     };
 
     AvatarGroup.prototype.add = function (avatar)
     {
       this.avatars.push (avatar);
     };
+
+    AvatarGroup.prototype.remove = function (guid)
+    {
+      // get index of avatar
+      var index = this.fetchAvatarIndexByGuid (guid);
+      if ( index < 0 )
+      {
+        $log.info("Unable to find avatar!!!!");
+        return;
+      }
+
+      // destroy the model
+      this.avatars[index].destroyIn (this.scene);
+      delete this.avatars[index];
+
+      // remove from array
+      this.avatars.splice(index, 1);
+    };
+
+    AvatarGroup.prototype.fetchAvatarByGuid = function (guid)
+    {
+        var index = this.fetchAvatarIndexByGuid (guid);
+
+        // nothing was found, pass this down
+        if (index < 0)
+          return index;
+
+        return this.avatars[index];
+    }
+
+    AvatarGroup.prototype.fetchAvatarIndexByGuid = function (guid)
+    {
+        var index = this.avatars.map( function(avatar) {
+                      return avatar.getGuid();
+                    }).indexOf(guid);
+
+        return index;
+    }
 
     AvatarGroup.prototype.update = function ( delta )
     {
@@ -25,7 +69,7 @@
       }
     };
 
-    // Avatar class to store each avatar 3d model
+    // Avatar class to store an avatar model
     var Avatar = function (geometry, materials)
     {
       this.geometry   = geometry;
@@ -35,7 +79,27 @@
       this.animMixer  = null;
       this.animations = {};
       this.isDancing  = false;
+      this.guid       = "";
       this.initialize();
+    };
+
+    // destroy and remove from scene
+    Avatar.prototype.destroyIn = function (scene)
+    {
+
+      // remove the mesh from the scene
+      var selectedObject = scene.getObjectByName(this.mesh.name);
+      scene.remove( selectedObject );
+
+      // reset the references so that the gc will clean up
+      delete this.geometry;
+      this.geometry   = null;
+      delete this.materials;
+      this.materials  = null;
+      delete this.mesh;
+      this.mesh       = null;
+      delete this.animMixer;
+      this.animMixer  = null;
     };
 
     // this initialzes the mesh
@@ -56,8 +120,6 @@
       this.mesh.position.z = this.getRandomArbitrary(-3.0, 3.0); // (+)near, (-)far
       this.mesh.position.x = this.getRandomArbitrary(-3.0, 3.0); // (-)left, (+)right
       this.mesh.position.y = 1.0; //(+)up-(-)down
-
-      this.setName("");
 
       // animation types
       // THREE.LoopOnce
@@ -81,9 +143,15 @@
       this.animations.idle.play ();
     };
 
-    Avatar.prototype.setName = function (name)
+    Avatar.prototype.setGuid = function (guid)
     {
-      this.mesh.name = name;
+      this.guid = guid;
+      this.mesh.name = guid;
+    };
+
+    Avatar.prototype.getGuid = function ()
+    {
+      return this.guid;
     };
 
     Avatar.prototype.addToScene = function (scene)
@@ -180,7 +248,7 @@
 
             }
 
-            function createGlRenderer(width, height)
+            function createGlRenderer (width, height)
             {
               var glRenderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
 
@@ -195,7 +263,8 @@
             }
 
 
-            function createPlane(width, height, position, rotation) {
+            function createPlane (width, height, position, rotation)
+            {
 
               // any mesh using this material will be transparent to the css renderer
               // this is an ugly hack, but it seems to be the only way to do this
@@ -219,10 +288,9 @@
               planeMesh.rotation.z = rotation.z;
 
               return planeMesh;
-
             }
 
-            function createCssObject(width, height, planeMesh) {
+            function createCssObject (width, height, planeMesh) {
 
               // create the iframe to contain webpage
               var frame	= document.createElement('iframe');
@@ -306,6 +374,13 @@
               $log.info ("Directive isDancing oldValue: " + JSON.stringify(oldValue));
               $log.info ("Directive isDancing newValue: " + JSON.stringify(newValue));
             });*/
+            /************************************************************/
+            $rootScope.$on('three-view-change-avatar', function (event, name) {
+              $log.info("three-view-change-avatar: " + JSON.stringify (name));
+              //XXX : Fix
+              changeAvatar ( "db43c7e1-7e8b-4cb4-83cb-072d08e735b1", name );
+            });
+
             // handle events from the three-js webui
             $rootScope.$on('three-view-dance', function (event, data) {
               $log.info("This is a toggle dance event:" + data);
@@ -333,41 +408,8 @@
                   fromThis.crossFadeTo( toThis, 0.3 );
             }
 
-  					function changeModel ()
-            { //modelUrl
-              /*
-              if($scope.isDancing)
-              {
-                _g_animations.idle.play();
-                $scope.isDancing = false;
-              }
-              else
-              {
-                _g_animations.dancing.play();
-                $scope.isDancing = true;
-              }
-*/
-  						//loader1.load(modelUrl, function (assimpjson) {
-  						//	assimpjson.scale.x = assimpjson.scale.y = assimpjson.scale.z = 0.2;
-  					  //	assimpjson.updateMatrix();
-  					  //	if (previous) scene.remove(previous);
-  					  //	scene.add(assimpjson);
 
-  						//	previous = assimpjson;
-  						//});
-              /*
-              if(!dancing) {
-                //glScene.add(android);
-                dancing = true;
-              } else {
-                var objName = glScene.getObjectByName(android.name);
-                //glScene.remove(objName);
-                dancing = false;
-              }
-              */
-  					}
-
-  					//loadModel(scope.assimpUrl);
+            /*****************************************************************/
   					animate();
 
   					function init() {
@@ -421,12 +463,6 @@
                 new THREE.Vector3(0, 0, 0)   // rotation
               );
 
-              // XXX: Bug, perspective skew on Firefox -- potential work in progress
-              //      fix below. Not ready to be uncommented.
-              //var vFOV = camera.fov * (Math.PI / 180); // convert VERTICAL fov to radians
-              //var targetZ = viewportHeight / (2 * Math.tan(vFOV / 2) );
-              //camera.position.z = targetZ;
-
               // Helpers
               var axes = new THREE.AxisHelper(2);
               glScene.add(axes);
@@ -461,14 +497,6 @@
               floorPlane.position.z = floorDepthOffset;
               glScene.add( floorPlane );
 
-              // Add models into a cache that can load
-              var jsonLoader = new THREE.JSONLoader();
-
-              // load animated model into the scene
-              jsonLoader.load( "3d-assets/models/cuboid_kakula.json", loadAvatarModel );
-              jsonLoader.load( "3d-assets/models/cuboid_mozter.json", loadAvatarModel );
-              jsonLoader.load( "3d-assets/models/cuboid_spock.json",  loadAvatarModel );
-
               var light = new THREE.SpotLight( 0xffffff, 2, 4500 );
               light.position.set(0, 2, 6);
               light.castShadow = true;
@@ -478,16 +506,57 @@
 
               glScene.add( light );
 
+              // ******************************************************
+              // XXX Add the initial avatars from the gamestate
+              _avatarGroup.setScene( glScene );
+
+              loadAvatar ( "db43c7e1-7e8b-4cb4-83cb-072d08e735b1", "Mozter" );
+
               // setup the sky
               addSky();
   					}
 
-            // create a new avatar object from the loaded geometry
-            function loadAvatarModel ( geometry, materials )
+            function changeAvatar ( userGuid, newModel )
             {
-              var avatar = new Avatar ( geometry, materials );
-              avatar.addToScene( glScene );
-              _avatarGroup.add (avatar);
+
+              // get the avatar using the guid
+              // XXX: get the position and other settings
+              // remove it from the scene
+              _avatarGroup.remove (userGuid);
+
+              // create a new avatar
+
+              // add it to the scene
+              loadAvatar ( userGuid, newModel );
+            }
+
+            function loadAvatar ( userGuid, modelName )
+            {
+                // Add models into a cache that can load
+                var loader   = new THREE.JSONLoader();
+                var jsonFile = "";
+
+                switch ( modelName )
+                {
+                  case "Kakula":
+                    jsonFile = "3d-assets/models/cuboid_kakula.json";
+                    break;
+                  case "Mozter":
+                    jsonFile = "3d-assets/models/cuboid_mozter.json";
+                    break;
+                  case "Spock":
+                    jsonFile = "3d-assets/models/cuboid_spock.json";
+                    break;
+                  default:
+                    throw "Unknown Avatar Name!";
+                }
+
+                loader.load( jsonFile, function(geometry, materials) {
+                  var avatar = new Avatar ( geometry, materials );
+                  avatar.setGuid (userGuid);
+                  avatar.addToScene( glScene );
+                  _avatarGroup.add (avatar);
+                });
             }
 
             // XXX: DEPRECATED add a model to the scene
