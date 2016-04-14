@@ -16,7 +16,43 @@ Intro / Reasons / Goals
  - Metaverse; virtual presence via modern web browser and WebGL.
  - Chat and participation (djing, dancing)
 
+Heroku
+ heroku logs
+ heroku run bash
+ git add .
+ git commit -am "description"
+ git push heroku master
+
+Animations:
+https://github.com/mrdoob/three.js/issues/5887
+http://yomotsu.net/blog/2015/10/31/three-r73-anim.html
+http://blog.romanliutikov.com/post/60461559240/rigging-and-skeletal-animation-in-threejs
+
+Export options
+https://cloud.githubusercontent.com/assets/201016/9787327/78dd6248-57ca-11e5-9045-4b36c5eabd42.png
+
+http://eelstork.deviantart.com/art/Multiple-animations-in-the-same-file-Blender-Tut-321883259
+
+Don't have armature selected :
+http://stackoverflow.com/questions/33578758/exporting-blender-animations-cant-reproduce-three-js-example
+
+https://devmatrix.wordpress.com/2013/02/27/creating-skeletal-animation-in-blender-and-exporting-it-to-three-js/
+
+Errors:
+http://stackoverflow.com/questions/33578758/exporting-blender-animations-cant-reproduce-three-js-example
+
 Models
+ Credits
+ Rymdnisse.net
+http://www.cubeecraft.com/
+http://www.cubeecraft.com/genre/originals/
+https://www.youtube.com/watch?v=j_vxkb4dpAM
+https://www.youtube.com/watch?v=joLpXebWxyE&feature=iv&src_vid=j_vxkb4dpAM&annotation_id=annotation_905628
+http://blender.freemovies.co.uk/
+http://blender.freemovies.co.uk/cubeecraft2/
+http://www.cubeecraft.com/genre/pop-culture/
+
+https://www.youtube.com/watch?v=Gb152Qncn2s
  - http://answers.unity3d.com/questions/16650/game-asset-website-list-free-and-paid-textures-mod.html
 
  - https://www.cgtrader.com/free-3d-models/character-people/fantasy?animated=1

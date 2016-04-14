@@ -23,7 +23,7 @@ console.log("Creating a new user in Mongo");
 var mongoose = require('mongoose');
 mongoose.set('debug', true);
 mongoose.connect(config.dbUrl);
-mongoose.connection.on('error', function () {
+mongoose.connection.on('error', function() {
     console.log('Mongoose connection error', arguments);
 });
 
@@ -35,7 +35,7 @@ mongoose.connection.once('open', function callback() {
     user.username = username;
     user.password = password;
 
-    user.save(function (err) {
+    user.save(function(err) {
         if (err) {
             console.log(err);
         } else {

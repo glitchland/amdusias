@@ -1,48 +1,44 @@
 (function() {
-  //XXX: https://github.com/cornflourblue/angular-authentication-example/blob/master/scripts/app.js
+    angular.module('amdusias')
+        .controller('LoginController', ['$http', '$log', '$scope', '$rootScope', '$location', 'AuthTokenFactory',
+            function($http, $log, $scope, $rootScope, $location, AuthTokenFactory) {
 
-  angular.module('amdusias')
-  .controller('LoginController',
-      ['$http', '$log', '$scope', '$rootScope', '$location', 'AuthTokenFactory',
-      function ($http, $log, $scope, $rootScope, $location, AuthTokenFactory) {
+                // handle logins
+                $scope.login = function() {
+                    $scope.dataLoading = true;
 
-        $scope.login = function () {
-          $scope.dataLoading = true;
+                    var jsonBody = {
+                        username: $scope.username,
+                        password: $scope.password
+                    };
 
-          var jsonBody = {
-            username: $scope.username,
-            password: $scope.password
-          };
+                    $http.post('/login', jsonBody).success(function(response) {
+                            $scope.dataLoading = false;
+                            if (!response.token) {
+                                handleError("Username or password is incorrect.");
+                            } else {
+                                AuthTokenFactory.setToken($scope.username, response.token);
+                                $location.path('/main');
+                            }
+                        })
+                        .error(function(response) {
+                            handleError(response);
+                        });
 
-          $http.post('/login', jsonBody).success ( function(response) {
-            $scope.dataLoading = false;
-            console.log("Response:" + JSON.stringify(response));
-            if(!response.token) {
-               handleError("Username or password is incorrect.");
-            } else {
-              AuthTokenFactory.setToken(response.token);
-              $location.path('/main');
+                };
+
+                $scope.logout = function() {
+                    auth.user = null;
+                    AuthTokenFactory.setToken();
+                };
+
+                function handleError(response) {
+                    $scope.error = response;
+                    $scope.dataLoading = false;
+                    return;
+                }
+
             }
-          })
-          .error( function(response) {
-            handleError(response);
-          });
-
-        };
-
-       $scope.logout = function () {
-         auth.user = null;
-         AuthTokenFactory.setToken();
-       }
-
-       // UTIL FUNCTIONS
-       function handleError(response) {
-         $log.info("handleError RESPONSE" + JSON.stringify(response));
-         $scope.error       = response;
-         $scope.dataLoading = false;
-         return;
-       }
-
-   }]);
+        ]);
 
 })();

@@ -1,8 +1,7 @@
-"use strict";
-
-var mongoose = require('mongoose'),
-    bcrypt   = require("bcryptjs"),
-    Schema   = mongoose.Schema;
+var bcrypt = require("bcryptjs"),
+    mongoose = require('mongoose'),
+    Schema = mongoose.Schema,
+    uuid = require('node-uuid');
 
 var UserSchema = new Schema({
 
@@ -11,14 +10,23 @@ var UserSchema = new Schema({
         unique: true,
         required: true,
         validate: {
-          validator: function(v) {
-            return /[a-zA-Z0-9_]{3,20}/.test(v)
-          },
-          message: 'This is not a valid username.'
+            validator: function(v) {
+                return /[a-zA-Z0-9_]{3,20}/.test(v);
+            },
+            message: 'This is not a valid username.'
         },
     },
-    threedModelId : {
-      type: Number,
+    avmodel: {
+        type: String,
+        unique: true,
+        required: true,
+        default: "noface",
+        validate: {
+            validator: function(v) {
+                return /[a-zA-Z0-9_]{3,20}/.test(v);
+            },
+            message: 'This is not a valid modelname.'
+        },
     },
     password: {
         type: String,
@@ -28,19 +36,20 @@ var UserSchema = new Schema({
 }, {
     toObject: {
         virtuals: true
-    }, toJSON: {
+    },
+    toJSON: {
         virtuals: true
     }
 });
 
-UserSchema.pre('save', function (next) {
+UserSchema.pre('save', function(next) {
     var user = this;
     if (this.isModified('password') || this.isNew) {
-        bcrypt.genSalt(10, function (err, salt) {
+        bcrypt.genSalt(10, function(err, salt) {
             if (err) {
                 return next(err);
             }
-            bcrypt.hash(user.password, salt, function (err, hash) {
+            bcrypt.hash(user.password, salt, function(err, hash) {
                 if (err) {
                     return next(err);
                 }
@@ -53,8 +62,8 @@ UserSchema.pre('save', function (next) {
     }
 });
 
-UserSchema.methods.comparePassword = function (passw, cb) {
-    bcrypt.compare(passw, this.password, function (err, isMatch) {
+UserSchema.methods.comparePassword = function(passw, cb) {
+    bcrypt.compare(passw, this.password, function(err, isMatch) {
         if (err) {
             return cb(err);
         }

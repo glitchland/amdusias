@@ -1,124 +1,118 @@
 /* disable rounded corners*/
-* {
-  border-radius: 0 !important;
-}
 
+* {
+    border-radius: 0 !important;
+}
 #three-panel {
-  position: relative;
-  left: 0px;
-  height:93vh;
-  /*border: 3px solid #73AD21; DEBUG*/
+    position: relative;
+    left: 0px;
+    height: 93vh;
+    /*border: 3px solid #73AD21; DEBUG*/
 }
 
 /* page slide size is "500px" */
+
 #search-result-container {
-  height : 450px;
-  display:block;
-  overflow-y:auto;
-  overflow-y: scroll;
-  padding-top: 5px;
-  /*border: 3px solid #773311; DEBUG*/
+    height: 450px;
+    display: block;
+    overflow-y: auto;
+    overflow-y: scroll;
+    padding-top: 5px;
+    /*border: 3px solid #773311; DEBUG*/
 }
-
 #playlist-contents-container {
-  height : 450px;
-  display:block;
-  overflow-y:auto;
-  overflow-y: scroll;
-  padding-top: 5px;
-  /*border: 3px solid #7733FF; DEBUG*/
+    height: 450px;
+    display: block;
+    overflow-y: auto;
+    overflow-y: scroll;
+    padding-top: 5px;
+    /*border: 3px solid #7733FF; DEBUG*/
 }
-
 #playlist-edit-menu-up {
-  height : 50px;
-  cursor: pointer !important;
-  border-top: 1px solid #464545;
-  border-bottom: 1px solid #464545;
+    height: 50px;
+    cursor: pointer !important;
+    border-top: 1px solid #464545;
+    border-bottom: 1px solid #464545;
 }
-
 #playlist-button {
-  background-color: #111111;
-  cursor: pointer !important;
+    background-color: #111111;
+    cursor: pointer !important;
 }
-
 #curate-playlist-button {
-  background-color: #008966;
-  cursor: pointer !important;
+    background-color: #008966;
+    cursor: pointer !important;
 }
-
 #delete-playlist-button {
-  background-color: #D62C1A;
-  cursor: pointer !important;
+    background-color: #D62C1A;
+    cursor: pointer !important;
 }
-
 #toggle-dance-button {
-  height : 45px;
-  position: fixed;
-  top: 3px; /* XXX bug, the layout of this button is broken */
-  cursor: pointer !important;
+    height: 45px;
+    position: fixed;
+    top: 3px;
+    /* XXX bug, the layout of this button is broken */
+    cursor: pointer !important;
 }
-
 #select-avatar {
-  position: relative;
-  left: 45px; /* XXX bug, for some reason we render over toggle dance*/
+    position: relative;
+    left: 45px;
+    /* XXX bug, for some reason we render over toggle dance*/
 }
 
 /* chat panel style */
+
 #chat-pane {
-  position: relative;
-  height:93vh;
-  border-radius: 0 !important;
-  overflow: hidden;
-  /*border: 3px solid #73AD21;*/
+    position: relative;
+    height: 93vh;
+    border-radius: 0 !important;
+    overflow: hidden;
+    /*border: 3px solid #73AD21;*/
 }
-
 #chat-panel {
-  height: 90%;
-  width: 100%;
-  position: absolute;
-  overflow-y: scroll;
-  /*border: 3px solid #773311;*/
+    height: 90%;
+    width: 100%;
+    position: absolute;
+    overflow-y: scroll;
+    /*border: 3px solid #773311;*/
 }
-
 #chat-header-content-footer-panel {
-  height:93vh;
-  position: relative;
-  overflow: hidden;
-  border-radius: 0 !important;
+    height: 93vh;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 !important;
 }
-
 #chat-input-box {
-  position: absolute;
-  bottom: 0;
-  /*border: 3px solid #ccddcc;*/
+    position: absolute;
+    bottom: 0;
+    /*border: 3px solid #ccddcc;*/
 }
-
 #chat-message {
-  font-size:small;
-  /*border: 3px solid #ccddcc;*/
+    font-size: small;
+    /*border: 3px solid #ccddcc;*/
 }
 
 /* highlight invalid input*/
+
 .highlight {
-    background:#C8C8C8;
+    background: #C8C8C8;
     /*border: 2px red solid;*/
 }
 
 /* CSS Style for sliding playlist UI*/
+
+
 /* Needed for hiding crollbars when pushing */
+
 html {
     overflow-x: hidden;
 }
-
 body {
     margin: 0 !important;
     padding: 0 !important;
 }
-
 .ng-pageslide {
     background: #222222;
 }
-
 body.ng-pageslide-body-open::before {
     content: '.';
     display: block;
@@ -132,7 +126,6 @@ body.ng-pageslide-body-open::before {
     opacity: 0.5;
     transition: opacity 1s;
 }
-
 body.ng-pageslide-body-closed::before {
     transition: opacity 1s;
     opacity: 0;
@@ -149,5 +142,10 @@ body.ng-pageslide-body-closed::before {
 }
 
 /* table odd and even styles */
-.odd { background-color: #222222; }
-.even { background-color: #222222; }
+
+.odd {
+    background-color: #222222;
+}
+.even {
+    background-color: #222222;
+}

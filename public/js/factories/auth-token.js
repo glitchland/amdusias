@@ -1,58 +1,67 @@
 (function() {
-  angular.module('amdusias')
-  .factory('AuthTokenFactory', [ '$window', '$log', '$rootScope', '$timeout', function AuthTokenFactory ($window, $log, $rootScope, $timeout) {
+    angular.module('amdusias')
+        .factory('AuthTokenFactory', ['$window', '$log', '$rootScope', '$timeout', function AuthTokenFactory($window, $log, $rootScope, $timeout) {
 
-      var tokenKey = 'auth-token';
-      var store    = $window.localStorage;
-      var token    = null;
+            var tokenKey = 'auth-token';
+            var store = $window.localStorage;
+            var bcAuthInterval = 1000;
+            var token = null;
+            var username = null;
 
-      return {
-        getToken: getToken,
-        setToken: setToken,
-        isLoggedIn: isLoggedIn,
-        broadCastAuthSuccess: broadCastAuthSuccess
-      };
+            return {
+                getToken: getToken,
+                getUsername: getUsername,
+                setToken: setToken,
+                isLoggedIn: isLoggedIn,
+                broadCastAuthSuccess: broadCastAuthSuccess
+            };
 
-      function broadCastAuthSuccess() {
-        // broadcast that there is successful authentication
-        // to cause the websocket to resolve
-        $timeout( function() {
-          console.log("broadcasting auth...");
-          $rootScope.$broadcast('authenticated');
-        }, 1000);
-      }
+            function broadcastAuthSuccess() {
+                // broadcast that there is successful authentication
+                // to cause the websocket to resolve
+                $timeout(function() {
+                    console.log("broadCastAuthSuccess: broadcasting");
+                    $rootScope.$broadcast('authenticated');
+                }, bcAuthInterval);
 
-      // make sure our current token, if any, is still valid
-      function isLoggedIn () {
-       token = getToken ();
-        if (token) {
-          currentTime = (new Date).getTime() / 1000;
-          tokenTime = angular.fromJson(atob(token.split('.')[1])).exp;
-          $log.info("Token Time:"+ tokenTime);
-          $log.info("Current Time:"+ currentTime);
-          if ( tokenTime > currentTime )
-          {
-            $log.info("VALID TOKEN");
-            broadCastAuthSuccess();
-            return true;
-          }
-        }
-        $log.info("INVALID TOKEN");
-        return false;
-      }
+            }
 
-      function getToken () {
-        return store.getItem(tokenKey);
-      }
+            // make sure our current token, if any, is still valid
+            function isLoggedIn() {
+                token = getToken();
+                if (token) {
+                    currentTime = (new Date()).getTime() / 1000;
+                    tokenTime = angular.fromJson(atob(token.split('.')[1])).exp;
+                    $log.info("Token Time:" + tokenTime);
+                    $log.info("Current Time:" + currentTime);
+                    if (tokenTime > currentTime) {
+                        $log.info("VALID TOKEN");
+                        broadcastAuthSuccess();
+                        return true;
+                    }
+                }
+                $log.info("INVALID TOKEN");
+                return false;
+            }
 
-      function setToken (token) {
-        if (token) {
-          broadCastAuthSuccess();
-          store.setItem (tokenKey, token);
-        } else {
-          store.removeItem (tokenKey);
-        }
-      }
+            function getToken() {
+                return store.getItem(tokenKey);
+            }
 
-    }]);
+            function getUsername() {
+                return username;
+            }
+
+            function setToken(username, token) {
+                if (token) {
+                    broadcastAuthSuccess();
+                    store.setItem(tokenKey, token);
+                    username = username;
+                } else {
+                    store.removeItem(tokenKey);
+                    username = null;
+                }
+            }
+
+        }]);
 })();

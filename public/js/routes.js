@@ -1,28 +1,30 @@
 (function() {
 
-  angular.module('amdusias')
-  .config(['$routeProvider', function ($routeProvider) {
+    angular.module('amdusias')
+        .config(['$routeProvider', function($routeProvider) {
 
-    $routeProvider
-        .when('/main', {
-            templateUrl: '/views/main.html'
-        })
+            $routeProvider
+                .when('/main', {
+                    templateUrl: '/views/main.html'
+                })
 
-        .when('/youtube', {
-            templateUrl: '/views/youtube.html'
-        })
+            .when('/youtube', {
+                templateUrl: '/views/youtube.html'
+            })
 
-        .when('/login', {
-            controller: 'LoginController',
-            templateUrl: '/views/login.html'
-        })
+            .when('/login', {
+                controller: 'LoginController',
+                templateUrl: '/views/login.html'
+            })
 
-        .when('/', {
-          redirectTo: '/login'
-        })
+            .when('/', {
+                redirectTo: '/login'
+            })
 
-        .otherwise({ redirectTo: '/' });
+            .otherwise({
+                redirectTo: '/'
+            });
 
-  }]);
+        }]);
 
 })();

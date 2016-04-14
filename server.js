@@ -1,19 +1,19 @@
 // general requires
 var express = require('express');
-var http    = require('http');
-var user    = require('./app/helpers/user');
+var http = require('http');
+var user = require('./app/helpers/user');
 
 // create the app
 var app = express();
 
-var expressJwt  = require('express-jwt');
-var jwt         = require('jsonwebtoken');
+var expressJwt = require('express-jwt');
+var jwt = require('jsonwebtoken');
 var socketioJwt = require('socketio-jwt');
-var bodyParser  = require('body-parser');
+var bodyParser = require('body-parser');
 
-var morgan      = require('morgan');
-var mongoose    = require('mongoose');
-var config      = require('./app/config/settings');
+var morgan = require('morgan');
+var mongoose = require('mongoose');
+var config = require('./app/config/settings');
 
 // connect to our mongoDB database
 mongoose.connect(config.dbUrl);
@@ -29,7 +29,11 @@ app.use(express.static(__dirname + '/public'));
 app.use(morgan('dev'));
 
 // setup jwt
-app.use(expressJwt({secret: config.jwtSecret}).unless({path: ['/login']}));
+app.use(expressJwt({
+    secret: config.jwtSecret
+}).unless({
+    path: ['/login']
+}));
 
 // volatile state for the server dj queues, video sync etc
 var serverState = require("./app/data/volatile-state");
@@ -48,9 +52,12 @@ app.use('/api/googlekey', user.checkAuthenticated, googleKey);
 var djManager = require('./app/routes/dj-queue');
 app.use('/api/djq', user.checkAuthenticated, djManager);
 
+var gameStateManager = require('./app/routes/gamestate-api');
+app.use('/api/gamestate', user.checkAuthenticated, gameStateManager);
+
 // start the server
 var httpServer = http.Server(app);
-httpServer.listen(process.env.PORT || 3000, function (){
+httpServer.listen(process.env.PORT || 3000, function() {
     console.log("server listening on port", config.listenPort);
 });
 
