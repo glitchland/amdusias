@@ -1,18 +1,18 @@
 (function() {
 
     angular.module('amdusias')
-        .controller('ThreeWebUIController', ['$scope', '$interval', '$http', '$log', '$rootScope', 'SocketFactory', 'RenderCharacters',
-            function($scope, $interval, $http, $log, $rootScope, SocketFactory, RenderCharacters) {
+        .controller('ThreeWebUIController', ['$scope', '$interval', '$http', '$log', '$rootScope', 'SocketFactory', 'SceneManager',
+            function($scope, $interval, $http, $log, $rootScope, SocketFactory, SceneManager) {
 
                 var jwt = null;
                 $scope.socketConnected = false;
                 $scope.selectedAvatar = null;
                 $scope.avatars = [{
-                    "name": "Kakula"
+                    "name": "kakula"
                 }, {
-                    "name": "Mozter"
+                    "name": "mozter"
                 }, {
-                    "name": "Spock"
+                    "name": "spock"
                 }];
 
                 // socket is connected
@@ -30,29 +30,11 @@
                     $scope.socketConnected = false;
                 });
 
+                // when we get a ping from the server, update the scene
                 $scope.handleLevelStateSync = function(remoteState) {
-                    $log.info("ls-sync: " + JSON.stringify(remoteState));
                     SceneManager.updateSceneFromRemoteState(remoteState);
                 };
 
-
-                // handle websockets get-my-gamestate
-                /*
-                    $scope.toggleDance = function() {
-                      if ($scope.isAvatarDancing)
-                      {
-                        $scope.isAvatarDancing = false;
-                      }
-                      else
-                      {
-                        $scope.isAvatarDancing = true;
-                      }
-                      $log.info("Toggle Dance: " + $scope.isAvatarDancing);
-                    };
-
-                    // check if gamestate has changed
-                    $rootScope.$emit('game-state-changed', GlobalGameState.toJSON);
-                */
                 // do something when the dropdown is changed
                 $scope.changedValue = function(avatar) {
                     console.log("AVATAR CHANGED: " + JSON.stringify(avatar));

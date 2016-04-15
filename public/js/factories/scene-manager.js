@@ -8,6 +8,7 @@
                 this.deleted = [];
                 this.created = [];
                 this.modified = [];
+                this.hasUnpublishedChanges = false;
             };
 
             SceneChanges.prototype.getDeleted = function() {
@@ -18,20 +19,26 @@
                 return this.created;
             };
 
+            SceneChanges.prototype.tainted = function(input = []) {
+                if (input.length > 0)
+                    this.hasUnpublishedChanges = true;
+                return input;
+            };
+
             SceneChanges.prototype.setDeleted = function(deleted) {
-                this.deleted = deleted;
+                this.deleted = this.tainted(deleted);
             };
 
             SceneChanges.prototype.setCreated = function(created) {
-                this.created = created;
+                this.created = this.tainted(created);
             };
 
             SceneChanges.prototype.setModified = function(modified) {
-                this.modified = modified;
+                this.modified = this.tainted(modified);
             };
 
             SceneChanges.prototype.toJSON = function() {
-                var sceneChanges = {
+                let sceneChanges = {
                     "deleted": [],
                     "created": [],
                     "modified": []
@@ -44,6 +51,20 @@
                 return sceneChanges;
             };
 
+            // publish items to listeners if required
+            SceneChanges.prototype.publishConditionally = function() {
+
+                if (this.hasUnpublishedChanges) {
+                    // notify three-view.js to update the scene
+                    $rootScope.$emit('scene-changes', this.toJSON());
+                    this.hasUnpublishedChanges = false;
+                    $log.info("================================================");
+                    $log.info("Published Scene Changes: " + JSON.stringify(this.toJSON()));
+                    $log.info("================================================");
+                }
+
+            };
+
             /* A class to represent out layout for the level */
             var MyLevelState = function(guid) {
                 this.localScene = {};
@@ -53,9 +74,9 @@
 
             // search old data for items that are not in new data and remove
             MyLevelState.prototype.itemsInLeftNotInRight = function(left, right) {
-                var itemsNotInRight = [];
+                let itemsNotInRight = [];
 
-                for (var item in left) {
+                for (let item in left) {
                     if (right.hasOwnProperty(item))
                         continue;
 
@@ -66,20 +87,20 @@
             };
 
             MyLevelState.prototype.removeItemsFrom = function(here, items) {
-                for (var item in items) {
+                for (let item in items) {
                     delete here[item];
                 }
             };
 
             MyLevelState.prototype.addItemsTo = function(here, items) {
-                for (var item in items) {
+                for (let item in items) {
                     here[item] = items[item];
                 }
             };
 
             MyLevelState.prototype.mergeModified = function(localState, remoteState) {
-                var modified = [];
-                for (var key in remoteState) {
+                let modified = [];
+                for (let key in remoteState) {
                     // if it is tanted, add to modified, and update local state
                     if (remoteState[key].t === "1") {
                         localState[key] = remoteState[key];
@@ -92,7 +113,7 @@
 
             // generate a key for the player json
             MyLevelState.prototype.key = function(objJson) {
-                var key = objJson.g;
+                let key = objJson.g;
                 if (!key) {
                     throw "Could not get key from player JSON";
                 }
@@ -103,81 +124,33 @@
             // that the state needs to be synchronized
             // consumes : server JSON
             // produces : scene changes
-            MyLevelState.prototype.processServerJson = function(remoteScene) {
+            MyLevelState.prototype.processServerJSON = function(remoteScene) {
 
-                /* XXX TEST DATA
-                    // local copy
-                    var testPlayer1L = {t: "0", "g":"56b980a97168211b0ad94fa2","m":"spock","p":{"x":7,"y":7,"z":1},"d":"0"};
-                    // Remote copy
-                    var testPlayer1R = {t: "1", "g":"56b980a97168211b0ad94fa2","m":"spock","p":{"x":7,"y":8,"z":1},"d":"1"};
+                let theseSceneChanges = new SceneChanges();
 
-                    var testPlayer2R = {t: "0", "g":"66b980a97168211b0ad94fa2","m":"spock","p":{"x":7,"y":7,"z":1},"d":"0"};
-                    var testPlayer3R = {t: "0", "g":"76b980a97168211b0ad94fa2","m":"spock","p":{"x":7,"y":7,"z":1},"d":"0"};
+                // items not in remote scene tree but in local tree (deleted)
+                let deletedItems = this.itemsInLeftNotInRight(this.localScene, remoteScene);
+                // items not in local tree but in remote tree (created)
+                let createdItems = this.itemsInLeftNotInRight(remoteScene, this.localScene);
+                // items in both trees, but modified in remote tree
+                let modifiedItems = this.mergeModified(this.localScene, remoteScene);
 
-                    // removed
-                    var testPlayer4  = {t: "0", "g":"86b980a97168211b0ad94fa2","m":"spock","p":{"x":7,"y":7,"z":1},"d":"0"};
-
-                    var localScene   = {};
-                    var remoteScene  = {};
-
-                    //this.localScene
-
-                    //  XXX need to put same key function on server
-                    remoteScene[key(testPlayer1R)] = testPlayer1R;
-                    remoteScene[key(testPlayer2R)] = testPlayer2R;
-                    remoteScene[key(testPlayer3R)] = testPlayer3R;
-
-                    localScene[key(testPlayer1L)]  = testPlayer1L;
-                    localScene[key(testPlayer4)]   = testPlayer4;
-
-                    // Instantiate a scene changes here
-
-                    var sceneChanges = {
-                      "deleted":  [],
-                      "created":  [],
-                      "modified": []
-                    }
-                    // update removed items
-                    console.log("Before Changes");
-                    console.log("================================================");
-                    console.log("remoteScene: " + JSON.stringify (remoteScene));
-                    console.log("localScene : " + JSON.stringify (localScene));
-                    console.log("================================================");
-
-                    // scenechanges setDeleted
-                    //
-                    */
-                var theseSceneChanges = new SceneChanges();
-
-                var deletedItems = this.itemsInLeftNotInRight(this.localScene, remoteScene);
-                var createdItems = this.itemsInLeftNotInRight(remoteScene, this.localScene);
-                var modifiedItems = this.mergeModified(this.localScene, remoteScene);
                 theseSceneChanges.setDeleted(deletedItems);
                 theseSceneChanges.setCreated(createdItems);
                 theseSceneChanges.setModified(modifiedItems);
 
-
-                // scenechanges getDeleted()
-                this.removeItemsFrom(localScene, theseSceneChanges.getDeleted());
-                // scenechanges getCreated()
-                this.addItemsTo(localScene, theseSceneChanges.getCreated());
-
-                console.log("(After Updated) localScene : " + JSON.stringify(localScene));
-                console.log("================================================");
-                console.log("Scene Changes: " + JSON.stringify(sceneChanges));
-                console.log("================================================");
+                // update the local scene tree
+                this.removeItemsFrom(this.localScene, theseSceneChanges.getDeleted());
+                this.addItemsTo(this.localScene, theseSceneChanges.getCreated());
 
                 // XXX How do I tell my own player from other state?
-                // Whats my guid? Get it from the server, and store it in thre scene, layout state renderer
-
-                // If there are changes, this will notify three-view.js to add
-                // or remove the characters from the scene .
-                $rootScope.$emit('scene-changes', theseSceneChanges.toJSON());
+                // Whats my guid? Get it from the server, and store it in thre scene, layout state renderer?
+                theseSceneChanges.publishConditionally();
 
             };
 
             // initialize global gamestate
-            var _myLevelState = new MyLevelState();
+            let _myLevelState = new MyLevelState();
 
             ///////////////////////////////////////////////////////////////////////
             // exported

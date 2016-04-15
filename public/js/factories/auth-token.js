@@ -13,14 +13,14 @@
                 getUsername: getUsername,
                 setToken: setToken,
                 isLoggedIn: isLoggedIn,
-                broadCastAuthSuccess: broadCastAuthSuccess
+                broadcastAuthSuccess: broadcastAuthSuccess
             };
 
             function broadcastAuthSuccess() {
                 // broadcast that there is successful authentication
                 // to cause the websocket to resolve
                 $timeout(function() {
-                    console.log("broadCastAuthSuccess: broadcasting");
+                    console.log("broadcastAuthSuccess: broadcasting");
                     $rootScope.$broadcast('authenticated');
                 }, bcAuthInterval);
 

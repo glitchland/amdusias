@@ -1,27 +1,27 @@
 // http://jsfiddle.net/zbjLh/2/
 (function() {
     angular.module('amdusias')
-        .directive('threePanel', ['$window', '$log', '$http', '$rootScope', 'RenderCharacters',
-            function($window, $log, $http, $rootScope, RenderCharacters) {
+        .directive('threePanel', ['$window', '$log', '$http', '$rootScope', 'SceneManager',
+            function($window, $log, $http, $rootScope, SceneManager) {
 
                 // ******************* Avatar Management ***************************//
                 // Avatar array built from game state
-                var AvatarGroup = function() {
+                var Avatars = function() {
                     this.scene = null;
                     this.avatars = [];
                 };
 
-                AvatarGroup.prototype.setScene = function(scene) {
+                Avatars.prototype.setScene = function(scene) {
                     this.scene = scene;
                 };
 
-                AvatarGroup.prototype.add = function(avatar) {
+                Avatars.prototype.add = function(avatar) {
                     this.avatars.push(avatar);
                 };
 
-                AvatarGroup.prototype.remove = function(guid) {
+                Avatars.prototype.remove = function(guid) {
                     // get index of avatar
-                    var index = this.fetchAvatarIndexByGuid(guid);
+                    let index = this.fetchAvatarIndexByGuid(guid);
                     if (index < 0) {
                         $log.info("Unable to find avatar!!!!");
                         return;
@@ -35,8 +35,8 @@
                     this.avatars.splice(index, 1);
                 };
 
-                AvatarGroup.prototype.fetchAvatarByGuid = function(guid) {
-                    var index = this.fetchAvatarIndexByGuid(guid);
+                Avatars.prototype.fetchAvatarByGuid = function(guid) {
+                    let index = this.fetchAvatarIndexByGuid(guid);
 
                     // nothing was found, pass this down
                     if (index < 0)
@@ -45,15 +45,15 @@
                     return this.avatars[index];
                 };
 
-                AvatarGroup.prototype.fetchAvatarIndexByGuid = function(guid) {
-                    var index = this.avatars.map(function(avatar) {
+                Avatars.prototype.fetchAvatarIndexByGuid = function(guid) {
+                    let index = this.avatars.map(function(avatar) {
                         return avatar.getGuid();
                     }).indexOf(guid);
 
                     return index;
                 };
 
-                AvatarGroup.prototype.update = function(delta) {
+                Avatars.prototype.update = function(delta) {
                     for (var i = 0; i < this.avatars.length; i++) {
                         this.avatars[i].updateAnimation(delta);
                     }
@@ -174,8 +174,6 @@
                 };
                 // ******************************************************************//
 
-                // this fades from idle to dancing animation
-
                 ///////////////////////////////////////////////////////////////////////
                 // directive code
                 return {
@@ -192,7 +190,7 @@
                         var viewportWidth;
 
                         // avatars
-                        var _avatarGroup = new AvatarGroup();
+                        var _avatars = new Avatars();
 
                         // for shaders
                         var start = Date.now();
@@ -359,21 +357,27 @@
                             ....
                           }]
                          */
-                        /* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
-          > on sync-global-gamestate
-           > remove avatars that do not exist anymore
-           > change avatars that are changed
+                        /* XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX */
+                        $rootScope.$on('scene-changes', function(event, changes) {
+                          // XXX break this into saner functions once it is working
 
-          > on toggle-dance
-           > if avatar guid exists in scene
-             > start the dance animation
-          */
-                        // this will get notified by the render characters service -- if we
-                        // need to make changes to the scene:
-                        // add -- character, pos
-                        // remove -- character
-                        $rootScope.$on('scene-character-changes', function(even, name) {
-                            console.log("sync-game-state from state factory: " + JSON.stringify(RenderCharacters.getCharacterData()));
+                          //"deleted": [],
+                          //"created": [],
+                          //"modified": []
+                          for (let i in changes.created) {
+                            $log.debug("XXX three-view, scene-changes: " + JSON.stringify(changes.created));
+                            let guid  = changes.created[i].g;
+                            let model = changes.created[i].m;
+                            // add .p (position)
+                            // add .d (dancing)
+                            loadAvatar(guid, model);
+                          }
+
+                          for (let deletedAvatar in changes.deleted) {
+                            let guid  = createdAvatar.g;
+                            _avatars.remove(guid);
+                          }
+
                         });
 
                         $rootScope.$on('sync-game-state', function(event, name) {
@@ -522,9 +526,9 @@
 
                             // ******************************************************
                             // XXX Add the initial avatars from the gamestate
-                            _avatarGroup.setScene(glScene);
+                            _avatars.setScene(glScene);
 
-                            loadAvatar("db43c7e1-7e8b-4cb4-83cb-072d08e735b1", "Mozter");
+                            loadAvatar("db43c7e1-7e8b-4cb4-83cb-072d08e735b1", "mozter");
 
                             // setup the sky
                             addSky();
@@ -535,7 +539,7 @@
                             // get the avatar using the guid
                             // XXX: get the position and other settings
                             // remove it from the scene
-                            _avatarGroup.remove(userGuid);
+                            _avatars.remove(userGuid);
 
                             // create a new avatar
 
@@ -544,18 +548,19 @@
                         }
 
                         function loadAvatar(userGuid, modelName) {
+                            $log.error("XXX LOADING MODEL:" + modelName);
                             // Add models into a cache that can load
                             var loader = new THREE.JSONLoader();
                             var jsonFile = "";
 
                             switch (modelName) {
-                                case "Kakula":
+                                case "kakula":
                                     jsonFile = "3d-assets/models/cuboid_kakula.json";
                                     break;
-                                case "Mozter":
+                                case "mozter":
                                     jsonFile = "3d-assets/models/cuboid_mozter.json";
                                     break;
-                                case "Spock":
+                                case "spock":
                                     jsonFile = "3d-assets/models/cuboid_spock.json";
                                     break;
                                 default:
@@ -566,7 +571,7 @@
                                 var avatar = new Avatar(geometry, materials);
                                 avatar.setGuid(userGuid);
                                 avatar.addToScene(glScene);
-                                _avatarGroup.add(avatar);
+                                _avatars.add(avatar);
                             });
                         }
 
@@ -708,8 +713,8 @@
                             var delta = _g_clock.getDelta();
                             var theta = _g_clock.getElapsedTime();
 
-                            if (_avatarGroup)
-                                _avatarGroup.update(delta);
+                            if (_avatars)
+                                _avatars.update(delta);
 
                             // This is a hack, it is for the shader applied to the sky material
                             if (shaderMaterial)
